@@ -1,0 +1,570 @@
+<!-- nova-venda.html — Fluxo de venda completo e intuitivo -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nova Venda - Sistema Vanda</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --cor-primaria: #667eea;
+      --cor-secundaria: #764ba2;
+      --fundo-gradiente: linear-gradient(135deg, var(--cor-primaria), var(--cor-secundaria));
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+    body {
+      background: var(--fundo-gradiente);
+      color: #333;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 15px 30px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-buttons {
+      display: flex;
+      gap: 15px;
+    }
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary {
+      background: var(--fundo-gradiente);
+      color: white;
+    }
+    .btn-secondary {
+      background: #f8f9fa;
+      color: var(--cor-primaria);
+      border: 2px solid var(--cor-primaria);
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    .steps {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 30px;
+      gap: 30px;
+    }
+    .step {
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+    .step-number {
+      width: 40px;
+      height: 40px;
+      background: white;
+      color: var(--cor-primaria);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin: 0 auto 10px;
+      border: 2px solid var(--cor-primaria);
+    }
+    .step.active .step-number {
+      background: var(--cor-primaria);
+      color: white;
+    }
+    .step-label {
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      margin-bottom: 25px;
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+    }
+    .form-control {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    .search-products {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .search-products input {
+      width: 100%;
+      padding: 12px 20px 12px 45px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 14px;
+    }
+    .search-products i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--cor-primaria);
+    }
+    .products-list {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #e0e0e0;
+      border-radius: 0 0 12px 12px;
+      background: white;
+      display: none;
+    }
+    .product-item {
+      padding: 12px 15px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .product-item:hover {
+      background: #f8f9fa;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    th {
+      background: #f8f9fa;
+      color: #333;
+      font-weight: 600;
+    }
+    .actions-cell {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-sm {
+      padding: 6px 10px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+    .summary-box {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 15px;
+      text-align: right;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 15px;
+    }
+    .summary-total {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--cor-primaria);
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 2px solid #eee;
+    }
+    .payment-methods {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+    .payment-option {
+      text-align: center;
+      padding: 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .payment-option.selected {
+      border-color: var(--cor-primaria);
+      background: rgba(102, 126, 234, 0.05);
+    }
+    .payment-option i {
+      font-size: 24px;
+      margin-bottom: 8px;
+      color: var(--cor-primaria);
+    }
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        gap: 15px;
+      }
+      .steps {
+        flex-wrap: wrap;
+        gap: 15px;
+      }
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <i class="fas fa-cash-register"></i>
+        Nova Venda
+      </div>
+      <div class="nav-buttons">
+        <a href="index.html" class="btn btn-secondary">
+          <i class="fas fa-home"></i> Início
+        </a>
+        <button class="btn btn-primary" onclick="finalizarVenda()">
+          <i class="fas fa-check"></i> Finalizar Venda
+        </button>
+      </div>
+    </header>
+
+    <div class="steps">
+      <div class="step active">
+        <div class="step-number">1</div>
+        <div class="step-label">Cliente</div>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-label">Produtos</div>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-label">Pagamento</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title"><i class="fas fa-user"></i> Informações do Cliente</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="clienteNome">Nome *</label>
+          <input type="text" id="clienteNome" class="form-control" placeholder="Nome do cliente" required />
+        </div>
+        <div class="form-group">
+          <label for="clienteTelefone">Telefone</label>
+          <input type="text" id="clienteTelefone" class="form-control" placeholder="(11) 99999-9999" />
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title"><i class="fas fa-box"></i> Adicionar Produtos</h2>
+      <div class="search-products">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchProduto" placeholder="Digite nome ou código do produto..." autocomplete="off" />
+        <div class="products-list" id="listaSugestoes"></div>
+      </div>
+
+      <table id="tabelaItens">
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th>Qtd</th>
+            <th>Preço</th>
+            <th>Total</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="corpoItens">
+          <tr>
+            <td colspan="5" class="loading">Nenhum produto adicionado</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title"><i class="fas fa-receipt"></i> Resumo da Venda</h2>
+      <div class="summary-box">
+        <div class="summary-row">
+          <span>Subtotal:</span>
+          <span id="subtotal">R$ 0,00</span>
+        </div>
+        <div class="summary-row">
+          <span>Desconto:</span>
+          <span>R$ 0,00</span>
+        </div>
+        <div class="summary-row summary-total">
+          <span>TOTAL:</span>
+          <span id="total">R$ 0,00</span>
+        </div>
+      </div>
+
+      <h3 style="margin: 25px 0 15px; font-weight: 600;">Forma de Pagamento</h3>
+      <div class="payment-methods">
+        <div class="payment-option selected" data-pagamento="Dinheiro">
+          <i class="fas fa-money-bill-wave"></i>
+          <div>Dinheiro</div>
+        </div>
+        <div class="payment-option" data-pagamento="PIX">
+          <i class="fab fa-pix"></i>
+          <div>PIX</div>
+        </div>
+        <div class="payment-option" data-pagamento="Cartão">
+          <i class="fas fa-credit-card"></i>
+          <div>Cartão</div>
+        </div>
+        <div class="payment-option" data-pagamento="Transferência">
+          <i class="fas fa-exchange-alt"></i>
+          <div>Transferência</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    let produtosDisponiveis = [];
+    let itensVenda = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await carregarProdutos();
+      configurarBusca();
+      configurarPagamento();
+    });
+
+    async function carregarProdutos() {
+      try {
+        const resposta = await GoogleSheetsAPI.get('obterProdutos');
+        produtosDisponiveis = resposta.produtos || [];
+        console.log('✅ Produtos carregados:', produtosDisponiveis.length);
+      } catch (error) {
+        Notificacao.mostrar('Erro ao carregar produtos: ' + error.message, 'error');
+      }
+    }
+
+    function configurarBusca() {
+      const input = document.getElementById('searchProduto');
+      const lista = document.getElementById('listaSugestoes');
+
+      input.addEventListener('input', () => {
+        const termo = input.value.trim().toLowerCase();
+        lista.innerHTML = '';
+        if (!termo) {
+          lista.style.display = 'none';
+          return;
+        }
+
+        const resultados = produtosDisponiveis.filter(p =>
+          (p.Nome && p.Nome.toLowerCase().includes(termo)) ||
+          (p.Codigo && p.Codigo.toLowerCase().includes(termo))
+        ).slice(0, 5);
+
+        if (resultados.length > 0) {
+          lista.style.display = 'block';
+          lista.innerHTML = resultados.map(p => `
+            <div class="product-item" onclick="selecionarProduto(${JSON.stringify(p).replace(/"/g, '&quot;')})">
+              ${p.Nome} <small>(Estoque: ${p.Estoque})</small>
+            </div>
+          `).join('');
+        } else {
+          lista.style.display = 'none';
+        }
+      });
+
+      // Fechar ao clicar fora
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.search-products')) {
+          lista.style.display = 'none';
+        }
+      });
+    }
+
+    function selecionarProduto(produto) {
+      // Verificar estoque
+      if (parseInt(produto.Estoque) <= 0) {
+        Notificacao.mostrar('Produto esgotado!', 'warning');
+        return;
+      }
+
+      const itemExistente = itensVenda.find(i => i.ID === produto.ID);
+      if (itemExistente) {
+        itemExistente.quantidade += 1;
+      } else {
+        itensVenda.push({
+          ID: produto.ID,
+          nome: produto.Nome,
+          preco: parseFloat(produto.Preco),
+          quantidade: 1
+        });
+      }
+
+      atualizarTabelaItens();
+      document.getElementById('searchProduto').value = '';
+      document.getElementById('listaSugestoes').style.display = 'none';
+    }
+
+    function atualizarTabelaItens() {
+      const tbody = document.getElementById('corpoItens');
+      if (itensVenda.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="loading">Nenhum produto adicionado</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = itensVenda.map((item, index) => `
+        <tr>
+          <td>${item.nome}</td>
+          <td>
+            <input type="number" value="${item.quantidade}" min="1" 
+                   onchange="atualizarQuantidade(${index}, this.value)" 
+                   style="width: 60px; padding: 5px; text-align: center;" />
+          </td>
+          <td>R$ ${item.preco.toFixed(2)}</td>
+          <td>R$ ${(item.preco * item.quantidade).toFixed(2)}</td>
+          <td class="actions-cell">
+            <button class="btn-sm btn-danger" onclick="removerItem(${index})">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+
+      atualizarTotais();
+    }
+
+    function atualizarQuantidade(index, novaQtd) {
+      const qtd = parseInt(novaQtd);
+      if (qtd >= 1) {
+        itensVenda[index].quantidade = qtd;
+        atualizarTabelaItens();
+      }
+    }
+
+    function removerItem(index) {
+      itensVenda.splice(index, 1);
+      atualizarTabelaItens();
+    }
+
+    function atualizarTotais() {
+      const subtotal = itensVenda.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
+      document.getElementById('subtotal').textContent = `R$ ${subtotal.toFixed(2)}`;
+      document.getElementById('total').textContent = `R$ ${subtotal.toFixed(2)}`;
+    }
+
+    function configurarPagamento() {
+      document.querySelectorAll('.payment-option').forEach(el => {
+        el.addEventListener('click', () => {
+          document.querySelectorAll('.payment-option').forEach(x => x.classList.remove('selected'));
+          el.classList.add('selected');
+        });
+      });
+    }
+
+    async function finalizarVenda() {
+      if (itensVenda.length === 0) {
+        Notificacao.mostrar('Adicione pelo menos um produto!', 'warning');
+        return;
+      }
+
+      const cliente = document.getElementById('clienteNome').value.trim();
+      if (!cliente) {
+        Notificacao.mostrar('Informe o nome do cliente!', 'warning');
+        return;
+      }
+
+      const formaPagamento = document.querySelector('.payment-option.selected').dataset.pagamento;
+      const total = parseFloat(document.getElementById('total').textContent.replace('R$ ', '').replace(',', '.'));
+
+      const venda = {
+        Cliente: cliente,
+        Telefone: document.getElementById('clienteTelefone').value,
+        Data: new Date().toISOString(),
+        Total: total,
+        Status: 'Concluída',
+        FormaPagamento: formaPagamento,
+        Produtos: itensVenda
+      };
+
+      try {
+        await GoogleSheetsAPI.request('salvarVenda', venda);
+        Notificacao.mostrar('Venda registrada com sucesso!', 'success');
+
+        // Salvar recibo no localStorage para impressão
+        const empresa = JSON.parse(localStorage.getItem('vanda_empresa') || '{"nome":"Sistema Vanda"}');
+        const numeroRecibo = `REC-${Date.now().toString().slice(-6)}`;
+        localStorage.setItem('ultimoRecibo', JSON.stringify({ venda, empresa, numeroRecibo }));
+
+        // Redirecionar para recibo
+        window.location.href = 'recibo.html';
+      } catch (error) {
+        Notificacao.mostrar('Erro ao salvar venda: ' + error.message, 'error');
+      }
+    }
+  </script>
+</body>
+</html>
