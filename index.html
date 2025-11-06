@@ -1,0 +1,303 @@
+<!-- index.html — DASHBOARD PRINCIPAL DO SISTEMA VANDA -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - Sistema Vanda</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --cor-primaria: #667eea;
+      --cor-secundaria: #764ba2;
+      --cor-sucesso: #28a745;
+      --cor-perigo: #dc3545;
+      --cor-aviso: #ffc107;
+      --fundo-gradiente: linear-gradient(135deg, var(--cor-primaria), var(--cor-secundaria));
+      --sombra: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+    body {
+      background: var(--fundo-gradiente);
+      color: #333;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 15px 30px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      box-shadow: var(--sombra);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-buttons {
+      display: flex;
+      gap: 15px;
+    }
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: white;
+    }
+    .btn-primary {
+      background: var(--fundo-gradiente);
+    }
+    .btn-secondary {
+      background: #f8f9fa;
+      color: var(--cor-primaria);
+      border: 2px solid var(--cor-primaria);
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .action-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 25px;
+      text-align: center;
+      box-shadow: var(--sombra);
+      transition: transform 0.3s ease;
+    }
+    .action-card:hover {
+      transform: translateY(-5px);
+    }
+    .action-icon {
+      font-size: 32px;
+      margin-bottom: 15px;
+      color: var(--cor-primaria);
+    }
+    .action-title {
+      font-weight: 600;
+      font-size: 16px;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .stat-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: var(--sombra);
+    }
+    .stat-value {
+      font-size: 28px;
+      font-weight: bold;
+      margin: 10px 0;
+      color: var(--cor-primaria);
+    }
+    .stat-label {
+      font-size: 14px;
+      color: #666;
+    }
+    .connection-status {
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+    }
+    .status-connected {
+      background: rgba(40, 167, 69, 0.1);
+      color: var(--cor-sucesso);
+    }
+    .status-disconnected {
+      background: rgba(220, 53, 69, 0.1);
+      color: var(--cor-perigo);
+    }
+    footer {
+      text-align: center;
+      color: white;
+      margin-top: 40px;
+      font-size: 14px;
+    }
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        gap: 15px;
+      }
+      .nav-buttons {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <i class="fas fa-chart-bar"></i>
+        <span id="nomeEmpresa">Sistema Vanda</span>
+      </div>
+      <div class="nav-buttons">
+        <a href="configuracoes.html" class="btn btn-secondary">
+          <i class="fas fa-cog"></i> Configurações
+        </a>
+        <a href="nova-venda.html" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Nova Venda
+        </a>
+      </div>
+    </header>
+
+    <div class="connection-status" id="connectionStatus">
+      <i class="fas fa-spinner fa-spin"></i> Verificando conexão...
+    </div>
+
+    <div class="quick-actions">
+      <a href="vendas.html" class="action-card">
+        <div class="action-icon"><i class="fas fa-shopping-cart"></i></div>
+        <div class="action-title">Vendas</div>
+      </a>
+      <a href="produtos.html" class="action-card">
+        <div class="action-icon"><i class="fas fa-box"></i></div>
+        <div class="action-title">Produtos</div>
+      </a>
+      <a href="relatorio.html" class="action-card">
+        <div class="action-icon"><i class="fas fa-chart-line"></i></div>
+        <div class="action-title">Relatórios</div>
+      </a>
+      <a href="resumo.html" class="action-card">
+        <div class="action-icon"><i class="fas fa-file-invoice"></i></div>
+        <div class="action-title">Resumo</div>
+      </a>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Vendas Hoje</div>
+        <div class="stat-value" id="vendasHoje">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Receita Hoje</div>
+        <div class="stat-value" id="receitaHoje">R$ 0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Produtos</div>
+        <div class="stat-value" id="totalProdutos">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Estoque Baixo</div>
+        <div class="stat-value" id="estoqueBaixo">0</div>
+      </div>
+    </div>
+
+    <footer>
+      <p>Sistema Vanda &copy; 2025 — Seu sistema de vendas inteligente</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Carregar dados da empresa
+      await carregarDadosEmpresa();
+      // Testar conexão
+      await testarConexao();
+      // Carregar estatísticas
+      await carregarEstatisticas();
+    });
+
+    async function carregarDadosEmpresa() {
+      try {
+        const config = GoogleSheetsAPI.obterConfiguracoesAtuais();
+        const resposta = await GoogleSheetsAPI.get('obterEmpresa');
+        const empresa = resposta.empresa || {};
+
+        // Atualizar tema
+        const cor1 = empresa.corPrimaria || '#667eea';
+        const cor2 = empresa.corSecundaria || '#764ba2';
+        document.documentElement.style.setProperty('--cor-primaria', cor1);
+        document.documentElement.style.setProperty('--cor-secundaria', cor2);
+        document.documentElement.style.setProperty('--fundo-gradiente', `linear-gradient(135deg, ${cor1}, ${cor2})`);
+
+        // Atualizar nome
+        document.getElementById('nomeEmpresa').textContent = empresa.nome || 'Sistema Vanda';
+      } catch (e) {
+        console.warn('Empresa não configurada ainda');
+      }
+    }
+
+    async function testarConexao() {
+      const statusEl = document.getElementById('connectionStatus');
+      try {
+        await GoogleSheetsAPI.testarConexao();
+        statusEl.className = 'connection-status status-connected';
+        statusEl.innerHTML = '<i class="fas fa-wifi"></i> Conectado ao Google Sheets';
+      } catch (e) {
+        statusEl.className = 'connection-status status-disconnected';
+        statusEl.innerHTML = '<i class="fas fa-wifi-slash"></i> Sem conexão com o banco de dados';
+      }
+    }
+
+    async function carregarEstatisticas() {
+      try {
+        const [vendasResposta, produtosResposta] = await Promise.all([
+          GoogleSheetsAPI.get('obterVendas'),
+          GoogleSheetsAPI.get('obterProdutos')
+        ]);
+
+        const vendas = vendasResposta.vendas || [];
+        const produtos = produtosResposta.produtos || [];
+
+        const hoje = new Date().toISOString().split('T')[0];
+        const vendasHoje = vendas.filter(v => {
+          const dataVenda = new Date(v.Data).toISOString().split('T')[0];
+          return dataVenda === hoje;
+        });
+
+        const receitaHoje = vendasHoje.reduce((sum, v) => sum + (parseFloat(v.Total) || 0), 0);
+        const estoqueBaixo = produtos.filter(p => parseInt(p.Estoque) < 10 && parseInt(p.Estoque) > 0).length;
+
+        document.getElementById('vendasHoje').textContent = vendasHoje.length;
+        document.getElementById('receitaHoje').textContent = `R$ ${receitaHoje.toFixed(2)}`;
+        document.getElementById('totalProdutos').textContent = produtos.length;
+        document.getElementById('estoqueBaixo').textContent = estoqueBaixo;
+      } catch (e) {
+        console.error('Erro ao carregar estatísticas:', e);
+      }
+    }
+  </script>
+</body>
+  </html>
