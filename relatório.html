@@ -1,0 +1,479 @@
+<!-- relatorio.html — Análise inteligente de vendas com gráficos e filtros -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Relatórios - Sistema Vanda</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --cor-primaria: #667eea;
+      --cor-secundaria: #764ba2;
+      --fundo-gradiente: linear-gradient(135deg, var(--cor-primaria), var(--cor-secundaria));
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+    body {
+      background: var(--fundo-gradiente);
+      color: #333;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 15px 30px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-buttons {
+      display: flex;
+      gap: 15px;
+    }
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary {
+      background: var(--fundo-gradiente);
+      color: white;
+    }
+    .btn-secondary {
+      background: #f8f9fa;
+      color: var(--cor-primaria);
+      border: 2px solid var(--cor-primaria);
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    .filtros-relatorio {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 25px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    .filtros-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #333;
+    }
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: var(--fundo-gradiente);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .stat-label {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    .chart-container {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background: var(--cor-primaria);
+      color: white;
+      font-weight: 600;
+    }
+    tr:hover {
+      background: #f5f5f5;
+    }
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+    .export-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    @media (max-width: 768px) {
+      .filtros-grid {
+        grid-template-columns: 1fr;
+      }
+      header {
+        flex-direction: column;
+        gap: 15px;
+      }
+      .export-buttons {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <i class="fas fa-chart-line"></i>
+        Relatórios
+      </div>
+      <div class="nav-buttons">
+        <a href="index.html" class="btn btn-secondary">
+          <i class="fas fa-home"></i> Início
+        </a>
+        <button class="btn btn-primary" onclick="gerarRelatorio()">
+          <i class="fas fa-sync-alt"></i> Atualizar
+        </button>
+      </div>
+    </header>
+
+    <div class="filtros-relatorio">
+      <h3>Filtros do Relatório</h3>
+      <div class="filtros-grid">
+        <div class="form-group">
+          <label>Data Início</label>
+          <input type="date" id="dataInicio" />
+        </div>
+        <div class="form-group">
+          <label>Data Fim</label>
+          <input type="date" id="dataFim" />
+        </div>
+        <div class="form-group">
+          <label>Forma de Pagamento</label>
+          <select id="formaPagamento">
+            <option value="">Todas</option>
+            <option value="Dinheiro">Dinheiro</option>
+            <option value="PIX">PIX</option>
+            <option value="Cartão">Cartão</option>
+            <option value="Transferência">Transferência</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Ordenar por</label>
+          <select id="ordenarPor">
+            <option value="data">Data</option>
+            <option value="valor">Valor</option>
+            <option value="cliente">Cliente</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="aplicarFiltros()" style="width: 100%;">
+        <i class="fas fa-filter"></i> Aplicar Filtros
+      </button>
+    </div>
+
+    <div class="stats-grid" id="statsContainer">
+      <div class="loading">
+        <i class="fas fa-spinner fa-spin"></i> Carregando estatísticas...
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Vendas por Período</div>
+      </div>
+      <div class="chart-container">
+        <canvas id="vendasChart" height="100"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Formas de Pagamento</div>
+      </div>
+      <div class="chart-container">
+        <canvas id="pagamentosChart" height="100"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Detalhes das Vendas</div>
+        <div class="export-buttons">
+          <button class="btn btn-secondary" onclick="exportarPDF()">
+            <i class="fas fa-file-pdf"></i> PDF
+          </button>
+          <button class="btn btn-secondary" onclick="exportarExcel()">
+            <i class="fas fa-file-excel"></i> Excel
+          </button>
+        </div>
+      </div>
+      <div class="chart-container">
+        <table id="tabelaVendas">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Cliente</th>
+              <th>Produtos</th>
+              <th>Valor</th>
+              <th>Pagamento</th>
+            </tr>
+          </thead>
+          <tbody id="corpoTabelaVendas">
+            <tr>
+              <td colspan="5" class="loading">
+                <i class="fas fa-spinner fa-spin"></i> Carregando vendas...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    let vendasChart, pagamentosChart;
+    let dadosVendas = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const dataHoje = new Date();
+      const data30Dias = new Date();
+      data30Dias.setDate(data30Dias.getDate() - 30);
+      
+      document.getElementById('dataInicio').value = data30Dias.toISOString().split('T')[0];
+      document.getElementById('dataFim').value = dataHoje.toISOString().split('T')[0];
+
+      await gerarRelatorio();
+    });
+
+    async function gerarRelatorio() {
+      await carregarDados();
+      atualizarEstatisticas();
+      atualizarGraficos();
+      atualizarTabela();
+    }
+
+    async function carregarDados() {
+      try {
+        const resposta = await GoogleSheetsAPI.get('obterVendas');
+        dadosVendas = resposta.vendas || [];
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        dadosVendas = [];
+      }
+    }
+
+    function obterFiltros() {
+      return {
+        dataInicio: document.getElementById('dataInicio').value,
+        dataFim: document.getElementById('dataFim').value,
+        formaPagamento: document.getElementById('formaPagamento').value
+      };
+    }
+
+    function aplicarFiltros() {
+      gerarRelatorio();
+    }
+
+    function atualizarEstatisticas() {
+      const statsContainer = document.getElementById('statsContainer');
+      if (dadosVendas.length === 0) {
+        statsContainer.innerHTML = '<div class="stat-card"><div class="stat-number">0</div><div class="stat-label">Nenhum dado encontrado</div></div>';
+        return;
+      }
+
+      const totalVendas = dadosVendas.length;
+      const totalValor = dadosVendas.reduce((sum, v) => sum + (parseFloat(v.Total) || 0), 0);
+      const valorMedio = totalVendas > 0 ? totalValor / totalVendas : 0;
+      
+      const pagamentos = {};
+      dadosVendas.forEach(v => {
+        const f = v.FormaPagamento || 'Não informado';
+        pagamentos[f] = (pagamentos[f] || 0) + 1;
+      });
+      const formaMaisUsada = Object.keys(pagamentos).reduce((a, b) => pagamentos[a] > pagamentos[b] ? a : b);
+
+      statsContainer.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-number">${totalVendas}</div>
+          <div class="stat-label">Total de Vendas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">R$ ${totalValor.toFixed(2)}</div>
+          <div class="stat-label">Valor Total</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">R$ ${valorMedio.toFixed(2)}</div>
+          <div class="stat-label">Ticket Médio</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">${formaMaisUsada}</div>
+          <div class="stat-label">Pagamento Mais Usado</div>
+        </div>
+      `;
+    }
+
+    function atualizarGraficos() {
+      // Vendas por período
+      const ctxVendas = document.getElementById('vendasChart').getContext('2d');
+      if (vendasChart) vendasChart.destroy();
+
+      const vendasPorData = {};
+      dadosVendas.forEach(v => {
+        const data = new Date(v.Data).toLocaleDateString('pt-BR');
+        vendasPorData[data] = (vendasPorData[data] || 0) + (parseFloat(v.Total) || 0);
+      });
+
+      vendasChart = new Chart(ctxVendas, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(vendasPorData),
+          datasets: [{
+            label: 'Vendas (R$)',
+            data: Object.values(vendasPorData),
+            backgroundColor: 'rgba(102, 126, 234, 0.6)',
+            borderColor: var(--cor-primaria),
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+
+      // Formas de pagamento
+      const ctxPag = document.getElementById('pagamentosChart').getContext('2d');
+      if (pagamentosChart) pagamentosChart.destroy();
+
+      const pagamentos = {};
+      dadosVendas.forEach(v => {
+        const f = v.FormaPagamento || 'Não informado';
+        pagamentos[f] = (pagamentos[f] || 0) + 1;
+      });
+
+      pagamentosChart = new Chart(ctxPag, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(pagamentos),
+          datasets: [{
+            data: Object.values(pagamentos),
+            backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b']
+          }]
+        }
+      });
+    }
+
+    function atualizarTabela() {
+      const tbody = document.getElementById('corpoTabelaVendas');
+      if (dadosVendas.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5">Nenhuma venda encontrada</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = dadosVendas.map(v => {
+        const produtos = Array.isArray(v.Produtos) ? v.Produtos : (JSON.parse(v.Produtos || '[]') || []);
+        const nomes = produtos.map(p => p.nome || p.Nome).join(', ') || '—';
+        return `
+          <tr>
+            <td>${new Date(v.Data).toLocaleDateString('pt-BR')}</td>
+            <td>${v.Cliente || '—'}</td>
+            <td>${nomes}</td>
+            <td>R$ ${parseFloat(v.Total).toFixed(2)}</td>
+            <td>${v.FormaPagamento || '—'}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function exportarPDF() {
+      Notificacao.mostrar('Exportação para PDF em desenvolvimento', 'info');
+    }
+
+    function exportarExcel() {
+      Notificacao.mostrar('Exportação para Excel em desenvolvimento', 'info');
+    }
+  </script>
+</body>
+</html>
