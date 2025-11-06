@@ -1,0 +1,357 @@
+<!-- configuracoes.html — Central de Personalização do Sistema Vanda -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configurações - Sistema Vanda</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --cor-primaria: #667eea;
+      --cor-secundaria: #764ba2;
+      --fundo-gradiente: linear-gradient(135deg, var(--cor-primaria), var(--cor-secundaria));
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+    body {
+      background: var(--fundo-gradiente);
+      color: #333;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 15px 30px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-secondary {
+      background: #f8f9fa;
+      color: var(--cor-primaria);
+      border: 2px solid var(--cor-primaria);
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      margin-bottom: 25px;
+    }
+    .card-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+    }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    .color-preview {
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      margin-left: 10px;
+      vertical-align: middle;
+      border: 2px solid white;
+      box-shadow: 0 0 4px rgba(0,0,0,0.3);
+    }
+    .btn-group {
+      display: flex;
+      gap: 15px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .status-box {
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      font-weight: 600;
+    }
+    .status-success {
+      background: rgba(40, 167, 69, 0.1);
+      color: #155724;
+    }
+    .status-error {
+      background: rgba(220, 53, 69, 0.1);
+      color: #721c24;
+    }
+    .preview-theme {
+      margin-top: 20px;
+      padding: 15px;
+      background: white;
+      border-radius: 10px;
+      text-align: center;
+    }
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      header {
+        flex-direction: column;
+        gap: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <i class="fas fa-cog"></i>
+        Configurações do Sistema
+      </div>
+      <a href="index.html" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Voltar
+      </a>
+    </header>
+
+    <div class="card">
+      <h2 class="card-title"><i class="fas fa-plug"></i> Conexão com Google Sheets</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="urlGas">URL do Web App (GAS)</label>
+          <input type="text" id="urlGas" placeholder="https://script.google.com/macros/s/.../exec" />
+        </div>
+        <div class="form-group">
+          <label for="spreadsheetId">ID da Planilha do Google Sheets</label>
+          <input type="text" id="spreadsheetId" placeholder="1iv1A4_u4R1X2DdoaCLlwUyseMdfpgVw0ErS1ucAm_90" />
+        </div>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="testarConexao()">
+          <i class="fas fa-wifi"></i> Testar Conexão
+        </button>
+        <button class="btn btn-secondary" onclick="salvarConexao()">
+          <i class="fas fa-save"></i> Salvar Configuração
+        </button>
+      </div>
+      <div id="statusConexao" class="status-box" style="display: none;"></div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title"><i class="fas fa-paint-brush"></i> Identidade da Loja</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="nomeEmpresa">Nome da Empresa</label>
+          <input type="text" id="nomeEmpresa" placeholder="Ex: Loja do João" />
+        </div>
+        <div class="form-group">
+          <label for="corPrimaria">Cor Primária
+            <span id="previewPrimaria" class="color-preview"></span>
+          </label>
+          <input type="color" id="corPrimaria" value="#667eea" onchange="atualizarCores()" />
+        </div>
+        <div class="form-group">
+          <label for="corSecundaria">Cor Secundária
+            <span id="previewSecundaria" class="color-preview"></span>
+          </label>
+          <input type="color" id="corSecundaria" value="#764ba2" onchange="atualizarCores()" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="enderecoFiscal">Endereço Completo</label>
+        <textarea id="enderecoFiscal" rows="2" placeholder="Rua Exemplo, 123 – Bairro, Cidade/UF"></textarea>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="telefone">Telefone</label>
+          <input type="text" id="telefone" placeholder="(11) 99999-9999" />
+        </div>
+        <div class="form-group">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" placeholder="contato@loja.com" />
+        </div>
+      </div>
+
+      <div class="preview-theme">
+        <p>Visualização ao vivo do tema:</p>
+        <div style="background: var(--fundo-gradiente); color: white; padding: 10px; border-radius: 8px; display: inline-block;">
+          <i class="fas fa-store"></i> <span id="previewNome">Sua Loja</span>
+        </div>
+      </div>
+
+      <div class="btn-group" style="margin-top: 20px;">
+        <button class="btn btn-secondary" onclick="salvarEmpresa()">
+          <i class="fas fa-save"></i> Salvar Identidade da Loja
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      await carregarConfiguracoes();
+      atualizarCores();
+    });
+
+    async function carregarConfiguracoes() {
+      // Carregar configuração de conexão
+      const configConexao = GoogleSheetsAPI.obterConfiguracoesAtuais();
+      document.getElementById('urlGas').value = configConexao.gas_url;
+      document.getElementById('spreadsheetId').value = configConexao.spreadsheet_id;
+
+      // Carregar configuração da empresa
+      try {
+        const resposta = await GoogleSheetsAPI.get('obterEmpresa');
+        const empresa = resposta.empresa || {};
+        document.getElementById('nomeEmpresa').value = empresa.nome || '';
+        document.getElementById('enderecoFiscal').value = empresa.endereco || '';
+        document.getElementById('telefone').value = empresa.telefone || '';
+        document.getElementById('email').value = empresa.email || '';
+        if (empresa.corPrimaria) document.getElementById('corPrimaria').value = empresa.corPrimaria;
+        if (empresa.corSecundaria) document.getElementById('corSecundaria').value = empresa.corSecundaria;
+        atualizarCores();
+      } catch (e) {
+        console.warn('Empresa não configurada ainda');
+      }
+    }
+
+    function atualizarCores() {
+      const cor1 = document.getElementById('corPrimaria').value;
+      const cor2 = document.getElementById('corSecundaria').value;
+      document.documentElement.style.setProperty('--cor-primaria', cor1);
+      document.documentElement.style.setProperty('--cor-secundaria', cor2);
+      document.documentElement.style.setProperty('--fundo-gradiente', `linear-gradient(135deg, ${cor1}, ${cor2})`);
+
+      // Atualizar previews
+      document.getElementById('previewPrimaria').style.backgroundColor = cor1;
+      document.getElementById('previewSecundaria').style.backgroundColor = cor2;
+      document.getElementById('previewNome').textContent = document.getElementById('nomeEmpresa').value || 'Sua Loja';
+    }
+
+    async function testarConexao() {
+      const url = document.getElementById('urlGas').value.trim();
+      const id = document.getElementById('spreadsheetId').value.trim();
+
+      if (!url || !id) {
+        mostrarStatus('⚠️ Preencha URL e ID da planilha', false);
+        return;
+      }
+
+      // Atualizar temporariamente para teste
+      GoogleSheetsAPI.atualizarConfiguracoes(url, id);
+
+      try {
+        await GoogleSheetsAPI.testarConexao();
+        mostrarStatus('✅ Conexão bem-sucedida com o Google Sheets!', true);
+      } catch (e) {
+        mostrarStatus('❌ Falha na conexão: ' + e.message, false);
+      }
+    }
+
+    function mostrarStatus(mensagem, sucesso) {
+      const el = document.getElementById('statusConexao');
+      el.textContent = mensagem;
+      el.className = 'status-box ' + (sucesso ? 'status-success' : 'status-error');
+      el.style.display = 'block';
+    }
+
+    function salvarConexao() {
+      const url = document.getElementById('urlGas').value.trim();
+      const id = document.getElementById('spreadsheetId').value.trim();
+      if (!url || !id) {
+        alert('Preencha ambos os campos de conexão.');
+        return;
+      }
+      GoogleSheetsAPI.atualizarConfiguracoes(url, id);
+      mostrarStatus('✅ Configuração de conexão salva localmente.', true);
+      localStorage.setItem('vanda_config_manual', JSON.stringify({ url, id }));
+    }
+
+    async function salvarEmpresa() {
+      const dados = {
+        nome: document.getElementById('nomeEmpresa').value,
+        endereco: document.getElementById('enderecoFiscal').value,
+        telefone: document.getElementById('telefone').value,
+        email: document.getElementById('email').value,
+        corPrimaria: document.getElementById('corPrimaria').value,
+        corSecundaria: document.getElementById('corSecundaria').value
+      };
+
+      try {
+        await GoogleSheetsAPI.request('salvarEmpresa', dados);
+        Notificacao.mostrar('✅ Identidade da loja salva com sucesso!', 'success');
+        // Atualizar tema global
+        const config = GoogleSheetsAPI.obterConfiguracoesAtuais();
+        localStorage.setItem('vanda_empresa', JSON.stringify(dados));
+        window.dispatchEvent(new Event('empresaAtualizada'));
+      } catch (e) {
+        Notificacao.mostrar('❌ Erro ao salvar: ' + e.message, 'error');
+      }
+    }
+  </script>
+</body>
+        </html>
