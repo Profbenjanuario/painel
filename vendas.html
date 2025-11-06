@@ -1,0 +1,504 @@
+<!-- vendas.html — Gestão completa de vendas com design premium -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vendas - Sistema Vanda</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --cor-primaria: #667eea;
+      --cor-secundaria: #764ba2;
+      --fundo-gradiente: linear-gradient(135deg, var(--cor-primaria), var(--cor-secundaria));
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+    body {
+      background: var(--fundo-gradiente);
+      color: #333;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 15px 30px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-buttons {
+      display: flex;
+      gap: 15px;
+    }
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary {
+      background: var(--fundo-gradiente);
+      color: white;
+    }
+    .btn-secondary {
+      background: #f8f9fa;
+      color: var(--cor-primaria);
+      border: 2px solid var(--cor-primaria);
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 30px;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+    .card-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+    }
+    .search-box {
+      position: relative;
+      width: 250px;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 12px 20px 12px 45px;
+      border: 2px solid #e0e0e0;
+      border-radius: 25px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    .search-box i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--cor-primaria);
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: var(--fundo-gradiente);
+      color: white;
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .stat-label {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 14px;
+      text-align: left;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    th {
+      background: rgba(102, 126, 234, 0.1);
+      color: var(--cor-primaria);
+      font-weight: 600;
+    }
+    tr:hover {
+      background: rgba(102, 126, 234, 0.03);
+    }
+    .status {
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .status-concluída {
+      background: #d4edda;
+      color: #155724;
+    }
+    .status-pendente {
+      background: #fff3cd;
+      color: #856404;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-icon {
+      padding: 8px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-view { background: #e3f2fd; color: #1976d2; }
+    .btn-view:hover { background: #bbdefb; }
+    .btn-delete { background: #ffebee; color: #c62828; }
+    .btn-delete:hover { background: #ffcdd2; }
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #333;
+    }
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .export-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .btn-export {
+      width: 100%;
+      justify-content: center;
+    }
+    @media (max-width: 768px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+      header {
+        flex-direction: column;
+        gap: 15px;
+      }
+      .search-box {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <i class="fas fa-shopping-cart"></i>
+        Vendas
+      </div>
+      <div class="nav-buttons">
+        <a href="index.html" class="btn btn-secondary">
+          <i class="fas fa-home"></i> Início
+        </a>
+        <a href="nova-venda.html" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Nova Venda
+        </a>
+      </div>
+    </header>
+
+    <div class="main-content">
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Histórico de Vendas</div>
+            <div class="search-box">
+              <i class="fas fa-search"></i>
+              <input type="text" id="searchInput" placeholder="Pesquisar vendas..." oninput="filtrarVendas()" />
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-number" id="totalVendas">0</div>
+              <div class="stat-label">Total de Vendas</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" id="receitaTotal">R$ 0</div>
+              <div class="stat-label">Receita Total</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" id="vendasHoje">0</div>
+              <div class="stat-label">Vendas Hoje</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" id="ticketMedio">R$ 0</div>
+              <div class="stat-label">Ticket Médio</div>
+            </div>
+          </div>
+
+          <div id="tabelaContainer">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Cliente</th>
+                  <th>Data</th>
+                  <th>Valor</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="corpoTabela">
+                <tr>
+                  <td colspan="6" class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> Carregando vendas...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Filtros</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 15px;">
+            <div class="form-group">
+              <label>Data Início</label>
+              <input type="date" id="filtroDataInicio" />
+            </div>
+            <div class="form-group">
+              <label>Data Fim</label>
+              <input type="date" id="filtroDataFim" />
+            </div>
+            <div class="form-group">
+              <label>Status</label>
+              <select id="filtroStatus">
+                <option value="">Todos</option>
+                <option value="Concluída">Concluídas</option>
+                <option value="Pendente">Pendentes</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" style="width: 100%;" onclick="aplicarFiltros()">
+              <i class="fas fa-filter"></i> Aplicar Filtros
+            </button>
+            <button class="btn btn-secondary" style="width: 100%;" onclick="limparFiltros()">
+              <i class="fas fa-times"></i> Limpar Filtros
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Exportar Dados</div>
+          </div>
+          <div class="export-buttons">
+            <button class="btn btn-secondary btn-export" onclick="exportarPDF()">
+              <i class="fas fa-file-pdf"></i> Exportar PDF
+            </button>
+            <button class="btn btn-secondary btn-export" onclick="exportarExcel()">
+              <i class="fas fa-file-excel"></i> Exportar Excel
+            </button>
+            <button class="btn btn-secondary btn-export" onclick="imprimirRelatorio()">
+              <i class="fas fa-print"></i> Imprimir
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    let todasVendas = [];
+    let vendasFiltradas = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const dataHoje = new Date().toISOString().split('T')[0];
+      document.getElementById('filtroDataInicio').value = dataHoje;
+      document.getElementById('filtroDataFim').value = dataHoje;
+      await carregarVendas();
+    });
+
+    async function carregarVendas() {
+      try {
+        const resposta = await GoogleSheetsAPI.get('obterVendas');
+        todasVendas = resposta.vendas || [];
+        vendasFiltradas = [...todasVendas];
+        atualizarEstatisticas();
+        atualizarTabela();
+      } catch (error) {
+        console.error('Erro ao carregar vendas:', error);
+        document.getElementById('corpoTabela').innerHTML = '<tr><td colspan="6">Erro ao carregar vendas</td></tr>';
+      }
+    }
+
+    function atualizarEstatisticas() {
+      const total = vendasFiltradas.length;
+      const receita = vendasFiltradas.reduce((sum, v) => sum + (parseFloat(v.Total) || 0), 0);
+      const ticket = total > 0 ? receita / total : 0;
+      const hoje = new Date().toISOString().split('T')[0];
+      const vendasHoje = vendasFiltradas.filter(v =>
+        new Date(v.Data).toISOString().split('T')[0] === hoje
+      ).length;
+
+      document.getElementById('totalVendas').textContent = total;
+      document.getElementById('receitaTotal').textContent = `R$ ${receita.toFixed(2)}`;
+      document.getElementById('vendasHoje').textContent = vendasHoje;
+      document.getElementById('ticketMedio').textContent = `R$ ${ticket.toFixed(2)}`;
+    }
+
+    function atualizarTabela() {
+      const tbody = document.getElementById('corpoTabela');
+      if (vendasFiltradas.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6">Nenhuma venda encontrada</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = vendasFiltradas.map(venda => {
+        const data = new Date(venda.Data).toLocaleDateString('pt-BR');
+        const status = venda.Status || 'Concluída';
+        return `
+          <tr>
+            <td>${venda.ID || '—'}</td>
+            <td>${venda.Cliente || 'Cliente não informado'}</td>
+            <td>${data}</td>
+            <td>R$ ${parseFloat(venda.Total).toFixed(2)}</td>
+            <td><span class="status status-${status.toLowerCase()}">${status}</span></td>
+            <td class="action-buttons">
+              <button class="btn-icon btn-view" title="Ver recibo" onclick="verRecibo('${venda.ID}')">
+                <i class="fas fa-receipt"></i>
+              </button>
+              <button class="btn-icon btn-delete" title="Excluir" onclick="excluirVenda('${venda.ID}')">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function filtrarVendas() {
+      const termo = document.getElementById('searchInput').value.toLowerCase();
+      if (!termo) {
+        vendasFiltradas = [...todasVendas];
+      } else {
+        vendasFiltradas = todasVendas.filter(v =>
+          (v.Cliente || '').toLowerCase().includes(termo) ||
+          (v.ID || '').toLowerCase().includes(termo)
+        );
+      }
+      atualizarEstatisticas();
+      atualizarTabela();
+    }
+
+    function aplicarFiltros() {
+      const dataInicio = document.getElementById('filtroDataInicio').value;
+      const dataFim = document.getElementById('filtroDataFim').value;
+      const status = document.getElementById('filtroStatus').value;
+
+      vendasFiltradas = todasVendas.filter(v => {
+        const dataVenda = new Date(v.Data).toISOString().split('T')[0];
+        let ok = true;
+        if (dataInicio && dataVenda < dataInicio) ok = false;
+        if (dataFim && dataVenda > dataFim) ok = false;
+        if (status && v.Status !== status) ok = false;
+        return ok;
+      });
+
+      atualizarEstatisticas();
+      atualizarTabela();
+    }
+
+    function limparFiltros() {
+      document.getElementById('filtroDataInicio').value = '';
+      document.getElementById('filtroDataFim').value = '';
+      document.getElementById('filtroStatus').value = '';
+      vendasFiltradas = [...todasVendas];
+      atualizarEstatisticas();
+      atualizarTabela();
+    }
+
+    function verRecibo(vendaId) {
+      Notificacao.mostrar('Visualização de recibo em desenvolvimento', 'info');
+    }
+
+    async function excluirVenda(vendaId) {
+      if (!confirm(`Excluir venda ${vendaId}? Esta ação não pode ser desfeita.`)) return;
+      try {
+        Notificacao.mostrar('Exclusão permanente ainda não implementada no GAS. (Simulação)', 'info');
+        await carregarVendas();
+      } catch (error) {
+        Notificacao.mostrar('Erro ao excluir: ' + error.message, 'error');
+      }
+    }
+
+    function exportarPDF() {
+      Notificacao.mostrar('Exportação para PDF em desenvolvimento', 'info');
+    }
+
+    function exportarExcel() {
+      Notificacao.mostrar('Exportação para Excel em desenvolvimento', 'info');
+    }
+
+    function imprimirRelatorio() {
+      window.print();
+    }
+  </script>
+</body>
+                </html>
