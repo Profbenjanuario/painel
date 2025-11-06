@@ -1,0 +1,597 @@
+<!-- resumo.html — Dashboard inteligente com visão 360° do negócio -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resumo - Sistema Vanda</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --cor-primaria: #667eea;
+      --cor-secundaria: #764ba2;
+      --fundo-gradiente: linear-gradient(135deg, var(--cor-primaria), var(--cor-secundaria));
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+    body {
+      background: var(--fundo-gradiente);
+      color: #333;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 15px 30px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-buttons {
+      display: flex;
+      gap: 15px;
+    }
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary {
+      background: var(--fundo-gradiente);
+      color: white;
+    }
+    .btn-secondary {
+      background: #f8f9fa;
+      color: var(--cor-primaria);
+      border: 2px solid var(--cor-primaria);
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    .main-content {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 30px;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+    .card-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .stat-card {
+      background: var(--fundo-gradiente);
+      color: white;
+      padding: 25px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-5px);
+    }
+    .stat-icon {
+      font-size: 30px;
+      margin-bottom: 10px;
+    }
+    .stat-number {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .stat-label {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    .chart-container {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    .chart-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #333;
+      text-align: center;
+    }
+    .recent-activity {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 15px;
+      border-bottom: 1px solid #f0f0f0;
+      transition: background 0.3s ease;
+    }
+    .activity-item:hover {
+      background: rgba(102, 126, 234, 0.05);
+    }
+    .activity-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--fundo-gradiente);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+    .activity-content {
+      flex: 1;
+    }
+    .activity-title {
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    .activity-time {
+      font-size: 12px;
+      color: #666;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 5px;
+    }
+    .progress {
+      height: 100%;
+      background: var(--fundo-gradiente);
+      border-radius: 4px;
+    }
+    .goal-card {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      border-left: 4px solid var(--cor-primaria);
+    }
+    .goal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .goal-title {
+      font-weight: 600;
+      color: #333;
+    }
+    .goal-percentage {
+      font-weight: bold;
+      color: var(--cor-primaria);
+    }
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+    .alert {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+    .alert-warning {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      color: #856404;
+    }
+    .alert-danger {
+      background: #f8d7da;
+      border-left: 4px solid #dc3545;
+      color: #721c24;
+    }
+    .alert-success {
+      background: #d4edda;
+      border-left: 4px solid #28a745;
+      color: #155724;
+    }
+    @media (max-width: 768px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      header {
+        flex-direction: column;
+        gap: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <i class="fas fa-chart-bar"></i>
+        Resumo
+      </div>
+      <div class="nav-buttons">
+        <a href="index.html" class="btn btn-secondary">
+          <i class="fas fa-home"></i> Início
+        </a>
+        <button class="btn btn-primary" onclick="refreshData()">
+          <i class="fas fa-sync-alt"></i> Atualizar
+        </button>
+      </div>
+    </header>
+
+    <div class="main-content">
+      <div>
+        <div class="stats-grid" id="statsGrid">
+          <div class="loading">
+            <i class="fas fa-spinner fa-spin"></i> Carregando estatísticas...
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Desempenho de Vendas</div>
+            <select id="periodoVendas" onchange="atualizarGraficos()">
+              <option value="7">Últimos 7 dias</option>
+              <option value="30" selected>Últimos 30 dias</option>
+              <option value="90">Últimos 3 meses</option>
+            </select>
+          </div>
+          <div class="chart-container">
+            <canvas id="salesChart"></canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Produtos Mais Vendidos</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="productsChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Metas do Mês</div>
+          </div>
+          <div id="goalsContainer">
+            <div class="loading">
+              <i class="fas fa-spinner fa-spin"></i> Carregando metas...
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Atividade Recente</div>
+          </div>
+          <div class="recent-activity" id="activityContainer">
+            <div class="loading">
+              <i class="fas fa-spinner fa-spin"></i> Carregando atividades...
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Alertas do Sistema</div>
+          </div>
+          <div id="alertsContainer">
+            <div class="loading">
+              <i class="fas fa-spinner fa-spin"></i> Carregando alertas...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    let vendasChart, productsChart;
+    let dadosVendas = [];
+    let dadosProdutos = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      refreshData();
+    });
+
+    async function refreshData() {
+      try {
+        const [vendasResposta, produtosResposta] = await Promise.all([
+          GoogleSheetsAPI.get('obterVendas'),
+          GoogleSheetsAPI.get('obterProdutos')
+        ]);
+
+        dadosVendas = vendasResposta.vendas || [];
+        dadosProdutos = produtosResposta.produtos || [];
+
+        atualizarEstatisticas();
+        atualizarGraficos();
+        atualizarMetas();
+        atualizarAtividades();
+        atualizarAlertas();
+        Notificacao.mostrar('Dados atualizados com sucesso!', 'success');
+      } catch (error) {
+        console.error('Erro ao atualizar dados:', error);
+        Notificacao.mostrar('Erro ao atualizar: ' + error.message, 'error');
+      }
+    }
+
+    function atualizarEstatisticas() {
+      const statsGrid = document.getElementById('statsGrid');
+      if (dadosVendas.length === 0) {
+        statsGrid.innerHTML = '<div class="stat-card"><div class="stat-number">0</div><div class="stat-label">Nenhum dado disponível</div></div>';
+        return;
+      }
+
+      const totalVendas = dadosVendas.length;
+      const totalValor = dadosVendas.reduce((sum, v) => sum + (parseFloat(v.Total) || 0), 0);
+      const mesAtual = new Date().getMonth();
+      const anoAtual = new Date().getFullYear();
+      const vendasMes = dadosVendas.filter(v => {
+        const dataVenda = new Date(v.Data);
+        return dataVenda.getMonth() === mesAtual && dataVenda.getFullYear() === anoAtual;
+      }).length;
+      const estoqueBaixo = dadosProdutos.filter(p => p.Estoque > 0 && p.Estoque < 10).length;
+
+      statsGrid.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
+          <div class="stat-number">${totalVendas}</div>
+          <div class="stat-label">Total de Vendas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+          <div class="stat-number">R$ ${totalValor.toFixed(2)}</div>
+          <div class="stat-label">Receita Total</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fas fa-box"></i></div>
+          <div class="stat-number">${dadosProdutos.length}</div>
+          <div class="stat-label">Produtos Cadastrados</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+          <div class="stat-number">${vendasMes}</div>
+          <div class="stat-label">Vendas Este Mês</div>
+        </div>
+      `;
+    }
+
+    function atualizarGraficos() {
+      const periodo = parseInt(document.getElementById('periodoVendas').value);
+      atualizarGraficoVendas(periodo);
+      atualizarGraficoProdutos();
+    }
+
+    function atualizarGraficoVendas(periodoDias = 30) {
+      const dataFim = new Date();
+      const dataInicio = new Date();
+      dataInicio.setDate(dataInicio.getDate() - periodoDias);
+
+      const vendasPorData = {};
+      for (let i = 0; i < periodoDias; i++) {
+        const data = new Date(dataInicio);
+        data.setDate(data.getDate() + i);
+        const dataStr = data.toISOString().split('T')[0];
+        vendasPorData[dataStr] = 0;
+      }
+
+      dadosVendas.forEach(venda => {
+        const dataVenda = new Date(venda.Data).toISOString().split('T')[0];
+        if (vendasPorData.hasOwnProperty(dataVenda)) {
+          vendasPorData[dataVenda] += parseFloat(venda.Total) || 0;
+        }
+      });
+
+      const ctx = document.getElementById('salesChart').getContext('2d');
+      if (vendasChart) vendasChart.destroy();
+      vendasChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: Object.keys(vendasPorData).map(d => new Date(d).toLocaleDateString('pt-BR')),
+          datasets: [{
+            label: 'Vendas (R$)',
+            data: Object.values(vendasPorData),
+            borderColor: var(--cor-primaria),
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+
+    function atualizarGraficoProdutos() {
+      const ctx = document.getElementById('productsChart').getContext('2d');
+      if (productsChart) productsChart.destroy();
+
+      // Contar vendas por produto (simulação simples)
+      const contagem = {};
+      dadosVendas.forEach(v => {
+        const produtos = Array.isArray(v.Produtos) ? v.Produtos : (JSON.parse(v.Produtos || '[]') || []);
+        produtos.forEach(p => {
+          const nome = p.nome || p.Nome || 'Produto';
+          contagem[nome] = (contagem[nome] || 0) + (p.quantidade || 1);
+        });
+      });
+
+      const top5 = Object.entries(contagem)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+
+      productsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: top5.map(([nome]) => nome),
+          datasets: [{
+            label: 'Unidades Vendidas',
+            data: top5.map(([, qtd]) => qtd),
+            backgroundColor: 'rgba(102, 126, 234, 0.6)',
+            borderColor: var(--cor-primaria),
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+      });
+    }
+
+    function atualizarMetas() {
+      const goalsContainer = document.getElementById('goalsContainer');
+      const metas = [
+        { titulo: 'Meta de Vendas', atual: 12500, meta: 20000, tipo: 'valor' },
+        { titulo: 'Novos Clientes', atual: 15, meta: 25, tipo: 'quantidade' },
+        { titulo: 'Produtos Vendidos', atual: 89, meta: 150, tipo: 'quantidade' }
+      ];
+
+      goalsContainer.innerHTML = metas.map(meta => {
+        const porcentagem = (meta.atual / meta.meta) * 100;
+        const valorExibido = meta.tipo === 'valor' ? 
+          `R$ ${meta.atual.toLocaleString('pt-BR')} / ${meta.meta.toLocaleString('pt-BR')}` :
+          `${meta.atual} / ${meta.meta}`;
+        return `
+          <div class="goal-card">
+            <div class="goal-header">
+              <div class="goal-title">${meta.titulo}</div>
+              <div class="goal-percentage">${Math.min(100, Math.round(porcentagem))}%</div>
+            </div>
+            <div class="progress-bar">
+              <div class="progress" style="width: ${Math.min(100, porcentagem)}%"></div>
+            </div>
+            <div style="font-size: 12px; color: #666;">${valorExibido}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function atualizarAtividades() {
+      const container = document.getElementById('activityContainer');
+      if (dadosVendas.length === 0) {
+        container.innerHTML = '<div class="activity-item">Nenhuma atividade recente</div>';
+        return;
+      }
+
+      const atividades = dadosVendas
+        .slice(-5)
+        .reverse()
+        .map(v => ({
+          titulo: 'Nova venda',
+          descricao: `${v.Cliente || 'Cliente'} - R$ ${parseFloat(v.Total).toFixed(2)}`,
+          tempo: new Date(v.Data).toLocaleDateString('pt-BR')
+        }));
+
+      container.innerHTML = atividades.map(a => `
+        <div class="activity-item">
+          <div class="activity-icon"><i class="fas fa-shopping-cart"></i></div>
+          <div class="activity-content">
+            <div class="activity-title">${a.titulo}</div>
+            <div class="activity-time">${a.tempo}</div>
+            <div style="font-size: 12px; color: #666;">${a.descricao}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function atualizarAlertas() {
+      const container = document.getElementById('alertsContainer');
+      const alertas = [];
+
+      const estoqueBaixo = dadosProdutos.filter(p => p.Estoque > 0 && p.Estoque < 5);
+      if (estoqueBaixo.length > 0) {
+        alertas.push({ tipo: 'warning', msg: `${estoqueBaixo.length} produtos com estoque crítico` });
+      }
+
+      const semEstoque = dadosProdutos.filter(p => p.Estoque == 0);
+      if (semEstoque.length > 0) {
+        alertas.push({ tipo: 'danger', msg: `${semEstoque.length} produtos esgotados` });
+      }
+
+      const hoje = new Date().toISOString().split('T')[0];
+      const vendasHoje = dadosVendas.filter(v => new Date(v.Data).toISOString().split('T')[0] === hoje).length;
+      if (vendasHoje === 0) {
+        alertas.push({ tipo: 'warning', msg: 'Nenhuma venda registrada hoje' });
+      }
+
+      if (alertas.length === 0) {
+        alertas.push({ tipo: 'success', msg: 'Tudo está funcionando perfeitamente!' });
+      }
+
+      container.innerHTML = alertas.map(a => `
+        <div class="alert alert-${a.tipo}">
+          <i class="fas fa-${a.tipo === 'success' ? 'check-circle' : a.tipo === 'danger' ? 'exclamation-triangle' : 'exclamation-circle'}"></i>
+          ${a.msg}
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+</html>
