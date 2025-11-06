@@ -1,4 +1,4 @@
-<!-- resumo.html — Dashboard inteligente com visão 360° do negócio -->
+<!-- resumo.html — Dashboard executivo com visão 360° do negócio -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -161,7 +161,7 @@
       transition: background 0.3s ease;
     }
     .activity-item:hover {
-      background: rgba(102, 126, 234, 0.05);
+      background: rgba(102, 126, 234, 0.1);
     }
     .activity-icon {
       width: 40px;
@@ -264,7 +264,7 @@
     <header>
       <div class="logo">
         <i class="fas fa-chart-bar"></i>
-        Resumo
+        Resumo Executivo
       </div>
       <div class="nav-buttons">
         <a href="index.html" class="btn btn-secondary">
@@ -294,7 +294,7 @@
             </select>
           </div>
           <div class="chart-container">
-            <canvas id="salesChart"></canvas>
+            <canvas id="salesChart" height="120"></canvas>
           </div>
         </div>
 
@@ -303,7 +303,7 @@
             <div class="card-title">Produtos Mais Vendidos</div>
           </div>
           <div class="chart-container">
-            <canvas id="productsChart"></canvas>
+            <canvas id="productsChart" height="120"></canvas>
           </div>
         </div>
       </div>
@@ -351,101 +351,98 @@
     let dadosVendas = [];
     let dadosProdutos = [];
 
-    document.addEventListener('DOMContentLoaded', () => {
-      refreshData();
+    document.addEventListener('DOMContentLoaded', async () => {
+      await carregarDados();
     });
 
-    async function refreshData() {
+    async function carregarDados() {
       try {
-        const [vendasResposta, produtosResposta] = await Promise.all([
+        const [vendasResp, produtosResp] = await Promise.all([
           GoogleSheetsAPI.get('obterVendas'),
           GoogleSheetsAPI.get('obterProdutos')
         ]);
-
-        dadosVendas = vendasResposta.vendas || [];
-        dadosProdutos = produtosResposta.produtos || [];
+        dadosVendas = vendasResp.vendas || [];
+        dadosProdutos = produtosResp.produtos || [];
 
         atualizarEstatisticas();
         atualizarGraficos();
         atualizarMetas();
         atualizarAtividades();
         atualizarAlertas();
-        Notificacao.mostrar('Dados atualizados com sucesso!', 'success');
       } catch (error) {
-        console.error('Erro ao atualizar dados:', error);
-        Notificacao.mostrar('Erro ao atualizar: ' + error.message, 'error');
+        console.error('Erro ao carregar dados:', error);
+        Notificacao.mostrar('Erro ao carregar dashboard', 'error');
       }
     }
 
     function atualizarEstatisticas() {
       const statsGrid = document.getElementById('statsGrid');
       if (dadosVendas.length === 0) {
-        statsGrid.innerHTML = '<div class="stat-card"><div class="stat-number">0</div><div class="stat-label">Nenhum dado disponível</div></div>';
+        statsGrid.innerHTML = '<div class="stat-card"><div class="stat-number">0</div><div class="stat-label">Sem dados</div></div>';
         return;
       }
 
       const totalVendas = dadosVendas.length;
-      const totalValor = dadosVendas.reduce((sum, v) => sum + (parseFloat(v.Total) || 0), 0);
-      const mesAtual = new Date().getMonth();
-      const anoAtual = new Date().getFullYear();
-      const vendasMes = dadosVendas.filter(v => {
-        const dataVenda = new Date(v.Data);
-        return dataVenda.getMonth() === mesAtual && dataVenda.getFullYear() === anoAtual;
-      }).length;
-      const estoqueBaixo = dadosProdutos.filter(p => p.Estoque > 0 && p.Estoque < 10).length;
+      const receita = dadosVendas.reduce((sum, v) => sum + (parseFloat(v.Total) || 0), 0);
+      const ticket = totalVendas > 0 ? receita / totalVendas : 0;
+
+      const hoje = new Date().toISOString().split('T')[0];
+      const vendasHoje = dadosVendas.filter(v => new Date(v.Data).toISOString().split('T')[0] === hoje).length;
+
+      const estoqueBaixo = dadosProdutos.filter(p => (parseInt(p.Estoque) || 0) < 5 && (parseInt(p.Estoque) || 0) > 0).length;
 
       statsGrid.innerHTML = `
         <div class="stat-card">
           <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
           <div class="stat-number">${totalVendas}</div>
-          <div class="stat-label">Total de Vendas</div>
+          <div class="stat-label">Vendas Totais</div>
         </div>
         <div class="stat-card">
           <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
-          <div class="stat-number">R$ ${totalValor.toFixed(2)}</div>
+          <div class="stat-number">R$ ${receita.toFixed(2)}</div>
           <div class="stat-label">Receita Total</div>
         </div>
         <div class="stat-card">
           <div class="stat-icon"><i class="fas fa-box"></i></div>
           <div class="stat-number">${dadosProdutos.length}</div>
-          <div class="stat-label">Produtos Cadastrados</div>
+          <div class="stat-label">Produtos</div>
         </div>
         <div class="stat-card">
           <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
-          <div class="stat-number">${vendasMes}</div>
-          <div class="stat-label">Vendas Este Mês</div>
+          <div class="stat-number">${vendasHoje}</div>
+          <div class="stat-label">Vendas Hoje</div>
         </div>
       `;
     }
 
     function atualizarGraficos() {
-      const periodo = parseInt(document.getElementById('periodoVendas').value);
-      atualizarGraficoVendas(periodo);
+      atualizarGraficoVendas(parseInt(document.getElementById('periodoVendas').value));
       atualizarGraficoProdutos();
     }
 
-    function atualizarGraficoVendas(periodoDias = 30) {
-      const dataFim = new Date();
-      const dataInicio = new Date();
-      dataInicio.setDate(dataInicio.getDate() - periodoDias);
+    function atualizarGraficoVendas(periodoDias) {
+      const hoje = new Date();
+      const inicio = new Date();
+      inicio.setDate(hoje.getDate() - periodoDias);
 
       const vendasPorData = {};
-      for (let i = 0; i < periodoDias; i++) {
-        const data = new Date(dataInicio);
-        data.setDate(data.getDate() + i);
-        const dataStr = data.toISOString().split('T')[0];
-        vendasPorData[dataStr] = 0;
+      for (let i = 0; i <= periodoDias; i++) {
+        const data = new Date(inicio);
+        data.setDate(inicio.getDate() + i);
+        const key = data.toISOString().split('T')[0];
+        vendasPorData[key] = 0;
       }
 
-      dadosVendas.forEach(venda => {
-        const dataVenda = new Date(venda.Data).toISOString().split('T')[0];
-        if (vendasPorData.hasOwnProperty(dataVenda)) {
-          vendasPorData[dataVenda] += parseFloat(venda.Total) || 0;
+      dadosVendas.forEach(v => {
+        const key = new Date(v.Data).toISOString().split('T')[0];
+        if (vendasPorData[key] !== undefined) {
+          vendasPorData[key] += parseFloat(v.Total) || 0;
         }
       });
 
       const ctx = document.getElementById('salesChart').getContext('2d');
       if (vendasChart) vendasChart.destroy();
+
       vendasChart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -455,15 +452,12 @@
             data: Object.values(vendasPorData),
             borderColor: var(--cor-primaria),
             backgroundColor: 'rgba(102, 126, 234, 0.1)',
-            borderWidth: 3,
+            borderWidth: 2,
             fill: true,
             tension: 0.4
           }]
         },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } }
-        }
+        options: { responsive: true, plugins: { legend: { display: false } } }
       });
     }
 
@@ -471,36 +465,24 @@
       const ctx = document.getElementById('productsChart').getContext('2d');
       if (productsChart) productsChart.destroy();
 
-      // Contar vendas por produto (simulação simples)
-      const contagem = {};
-      dadosVendas.forEach(v => {
-        const produtos = Array.isArray(v.Produtos) ? v.Produtos : (JSON.parse(v.Produtos || '[]') || []);
-        produtos.forEach(p => {
-          const nome = p.nome || p.Nome || 'Produto';
-          contagem[nome] = (contagem[nome] || 0) + (p.quantidade || 1);
-        });
+      const categorias = {};
+      dadosProdutos.forEach(p => {
+        const cat = p.Categoria || 'Outros';
+        categorias[cat] = (categorias[cat] || 0) + 1;
       });
 
-      const top5 = Object.entries(contagem)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5);
-
       productsChart = new Chart(ctx, {
-        type: 'bar',
+        type: 'doughnut',
         data: {
-          labels: top5.map(([nome]) => nome),
+          labels: Object.keys(categorias),
           datasets: [{
-            label: 'Unidades Vendidas',
-            data: top5.map(([, qtd]) => qtd),
-            backgroundColor: 'rgba(102, 126, 234, 0.6)',
-            borderColor: var(--cor-primaria),
-            borderWidth: 1
+            data: Object.values(categorias),
+            backgroundColor: ['#667eea', '#764ba2', '#a18cd1', '#fbc2eb', '#ffecd2']
           }]
         },
         options: {
           responsive: true,
-          plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+          plugins: { legend: { position: 'bottom' } }
         }
       });
     }
@@ -508,26 +490,25 @@
     function atualizarMetas() {
       const goalsContainer = document.getElementById('goalsContainer');
       const metas = [
-        { titulo: 'Meta de Vendas', atual: 12500, meta: 20000, tipo: 'valor' },
-        { titulo: 'Novos Clientes', atual: 15, meta: 25, tipo: 'quantidade' },
-        { titulo: 'Produtos Vendidos', atual: 89, meta: 150, tipo: 'quantidade' }
+        { titulo: 'Meta de Vendas', atual: dadosVendas.reduce((s, v) => s + (parseFloat(v.Total) || 0), 0), meta: 20000 },
+        { titulo: 'Novos Clientes', atual: new Set(dadosVendas.map(v => v.Cliente)).size, meta: 30 },
+        { titulo: 'Produtos Vendidos', atual: dadosVendas.reduce((s, v) => s + (Array.isArray(v.Produtos) ? v.Produtos.length : 1), 0), meta: 150 }
       ];
 
-      goalsContainer.innerHTML = metas.map(meta => {
-        const porcentagem = (meta.atual / meta.meta) * 100;
-        const valorExibido = meta.tipo === 'valor' ? 
-          `R$ ${meta.atual.toLocaleString('pt-BR')} / ${meta.meta.toLocaleString('pt-BR')}` :
-          `${meta.atual} / ${meta.meta}`;
+      goalsContainer.innerHTML = metas.map(m => {
+        const perc = Math.min(100, Math.round((m.atual / m.meta) * 100));
         return `
           <div class="goal-card">
             <div class="goal-header">
-              <div class="goal-title">${meta.titulo}</div>
-              <div class="goal-percentage">${Math.min(100, Math.round(porcentagem))}%</div>
+              <div class="goal-title">${m.titulo}</div>
+              <div class="goal-percentage">${perc}%</div>
             </div>
             <div class="progress-bar">
-              <div class="progress" style="width: ${Math.min(100, porcentagem)}%"></div>
+              <div class="progress" style="width: ${perc}%"></div>
             </div>
-            <div style="font-size: 12px; color: #666;">${valorExibido}</div>
+            <div style="font-size: 12px; color: #666; margin-top: 5px;">
+              ${m.atual.toFixed(2)} de ${m.meta}
+            </div>
           </div>
         `;
       }).join('');
@@ -540,14 +521,12 @@
         return;
       }
 
-      const atividades = dadosVendas
-        .slice(-5)
-        .reverse()
-        .map(v => ({
-          titulo: 'Nova venda',
-          descricao: `${v.Cliente || 'Cliente'} - R$ ${parseFloat(v.Total).toFixed(2)}`,
-          tempo: new Date(v.Data).toLocaleDateString('pt-BR')
-        }));
+      const atividades = dadosVendas.slice(-5).reverse().map(v => ({
+        tipo: 'venda',
+        titulo: 'Nova venda',
+        descricao: `${v.Cliente || 'Cliente'} - R$ ${parseFloat(v.Total).toFixed(2)}`,
+        tempo: new Date(v.Data).toLocaleDateString('pt-BR')
+      }));
 
       container.innerHTML = atividades.map(a => `
         <div class="activity-item">
@@ -565,32 +544,53 @@
       const container = document.getElementById('alertsContainer');
       const alertas = [];
 
-      const estoqueBaixo = dadosProdutos.filter(p => p.Estoque > 0 && p.Estoque < 5);
+      const estoqueBaixo = dadosProdutos.filter(p => (parseInt(p.Estoque) || 0) < 5 && (parseInt(p.Estoque) || 0) > 0);
       if (estoqueBaixo.length > 0) {
-        alertas.push({ tipo: 'warning', msg: `${estoqueBaixo.length} produtos com estoque crítico` });
+        alertas.push({
+          tipo: 'warning',
+          mensagem: `${estoqueBaixo.length} produtos com estoque crítico`,
+          detalhes: 'Precisam ser reabastecidos'
+        });
       }
 
-      const semEstoque = dadosProdutos.filter(p => p.Estoque == 0);
+      const semEstoque = dadosProdutos.filter(p => (parseInt(p.Estoque) || 0) === 0);
       if (semEstoque.length > 0) {
-        alertas.push({ tipo: 'danger', msg: `${semEstoque.length} produtos esgotados` });
+        alertas.push({
+          tipo: 'danger',
+          mensagem: `${semEstoque.length} produtos esgotados`,
+          detalhes: 'Impactando vendas'
+        });
       }
 
       const hoje = new Date().toISOString().split('T')[0];
-      const vendasHoje = dadosVendas.filter(v => new Date(v.Data).toISOString().split('T')[0] === hoje).length;
-      if (vendasHoje === 0) {
-        alertas.push({ tipo: 'warning', msg: 'Nenhuma venda registrada hoje' });
+      const vendasHoje = dadosVendas.filter(v => new Date(v.Data).toISOString().split('T')[0] === hoje);
+      if (vendasHoje.length === 0) {
+        alertas.push({
+          tipo: 'warning',
+          mensagem: 'Nenhuma venda hoje',
+          detalhes: 'Considere promoções'
+        });
       }
 
       if (alertas.length === 0) {
-        alertas.push({ tipo: 'success', msg: 'Tudo está funcionando perfeitamente!' });
+        alertas.push({
+          tipo: 'success',
+          mensagem: 'Tudo em ordem!',
+          detalhes: 'Nenhum alerta crítico'
+        });
       }
 
       container.innerHTML = alertas.map(a => `
         <div class="alert alert-${a.tipo}">
-          <i class="fas fa-${a.tipo === 'success' ? 'check-circle' : a.tipo === 'danger' ? 'exclamation-triangle' : 'exclamation-circle'}"></i>
-          ${a.msg}
+          <div style="font-weight: 600;">${a.mensagem}</div>
+          <div>${a.detalhes}</div>
         </div>
       `).join('');
+    }
+
+    async function refreshData() {
+      await carregarDados();
+      Notificacao.mostrar('Dados atualizados com sucesso!', 'success');
     }
   </script>
 </body>
