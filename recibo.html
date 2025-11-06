@@ -1,0 +1,315 @@
+<!-- recibo.html — Recibo de venda elegante, responsivo e otimizado para impressão -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recibo - Sistema Vanda</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --cor-primaria: #667eea;
+      --cor-secundaria: #764ba2;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Courier New', 'Lucida Console', Monaco, monospace;
+    }
+    body {
+      background: #f9f9f9;
+      padding: 20px;
+      color: #333;
+    }
+    .recibo-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+    .recibo-header {
+      text-align: center;
+      border-bottom: 2px dashed var(--cor-primaria);
+      padding-bottom: 20px;
+      margin-bottom: 20px;
+    }
+    .empresa-nome {
+      font-size: 22px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      margin-bottom: 8px;
+    }
+    .empresa-detalhes {
+      font-size: 12px;
+      color: #555;
+      line-height: 1.4;
+    }
+    .recibo-title {
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      margin: 20px 0;
+      color: #333;
+    }
+    .recibo-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 20px;
+      font-size: 13px;
+    }
+    .info-group {
+      margin-bottom: 6px;
+    }
+    .info-label {
+      font-weight: bold;
+      color: #333;
+    }
+    .produtos-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 13px;
+    }
+    .produtos-table th {
+      background: var(--cor-primaria);
+      color: white;
+      padding: 8px;
+      text-align: left;
+    }
+    .produtos-table td {
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+    }
+    .produto-linha {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin: 3px 0;
+    }
+    .totais {
+      margin-top: 20px;
+      text-align: right;
+      font-size: 14px;
+    }
+    .total-line {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+    .total-final {
+      font-size: 18px;
+      font-weight: bold;
+      border-top: 2px solid var(--cor-primaria);
+      padding-top: 10px;
+      margin-top: 10px;
+      color: var(--cor-primaria);
+    }
+    .recibo-footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 12px;
+      color: #666;
+    }
+    .assinatura {
+      margin-top: 40px;
+      text-align: center;
+      padding-top: 15px;
+      border-top: 1px solid #999;
+    }
+    .acoes-recibo {
+      text-align: center;
+      margin-top: 30px;
+    }
+    .btn {
+      padding: 10px 20px;
+      margin: 0 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .btn-imprimir {
+      background: var(--cor-primaria);
+      color: white;
+    }
+    .btn-fechar {
+      background: #6c757d;
+      color: white;
+    }
+    .btn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    /* Impressão */
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+      .recibo-container {
+        box-shadow: none;
+        border-radius: 0;
+        padding: 15px;
+      }
+      .acoes-recibo {
+        display: none;
+      }
+      .recibo-header, .recibo-footer, .assinatura {
+        font-size: 11px;
+      }
+    }
+
+    /* Modo Térmico (80mm) */
+    @media (max-width: 600px) {
+      .recibo-container {
+        padding: 15px;
+      }
+      .recibo-info {
+        grid-template-columns: 1fr;
+      }
+      .empresa-nome {
+        font-size: 18px;
+      }
+      .recibo-title {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="recibo-container">
+    <div class="recibo-header">
+      <div class="empresa-nome" id="empresaNome">[Carregando...]</div>
+      <div class="empresa-detalhes" id="empresaDetalhes">[Endereço, CNPJ, Telefone]</div>
+    </div>
+
+    <div class="recibo-title">RECIBO DE VENDA</div>
+
+    <div class="recibo-info">
+      <div>
+        <div class="info-group">
+          <span class="info-label">Recibo:</span>
+          <span id="numeroRecibo">—</span>
+        </div>
+        <div class="info-group">
+          <span class="info-label">Data:</span>
+          <span id="dataRecibo">—</span>
+        </div>
+      </div>
+      <div>
+        <div class="info-group">
+          <span class="info-label">Cliente:</span>
+          <span id="clienteRecibo">—</span>
+        </div>
+        <div class="info-group">
+          <span class="info-label">Pagamento:</span>
+          <span id="pagamentoRecibo">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="listaProdutosSimples"></div>
+
+    <div class="totais">
+      <div class="total-line">
+        <span>TOTAL:</span>
+        <span id="totalRecibo">R$ 0,00</span>
+      </div>
+    </div>
+
+    <div class="assinatura">
+      <div>___________________________________</div>
+      <div>Assinatura do Responsável</div>
+    </div>
+
+    <div class="recibo-footer">
+      <div>Obrigado pela sua preferência!</div>
+      <div>Este recibo foi gerado automaticamente pelo <span id="nomeSistema">Sistema Vanda</span></div>
+    </div>
+
+    <div class="acoes-recibo">
+      <button class="btn btn-imprimir" onclick="window.print()">
+        <i class="fas fa-print"></i> Imprimir
+      </button>
+      <button class="btn btn-fechar" onclick="window.location.href='index.html'">
+        <i class="fas fa-home"></i> Voltar ao Início
+      </button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Aplicar tema da empresa
+      const empresaConfig = JSON.parse(localStorage.getItem('vanda_empresa') || '{}');
+      if (empresaConfig.corPrimaria) {
+        document.documentElement.style.setProperty('--cor-primaria', empresaConfig.corPrimaria);
+      }
+      if (empresaConfig.corSecundaria) {
+        document.documentElement.style.setProperty('--cor-secundaria', empresaConfig.corSecundaria);
+      }
+      document.getElementById('nomeSistema').textContent = empresaConfig.nome || 'Sistema Vanda';
+
+      carregarRecibo();
+    });
+
+    function carregarRecibo() {
+      try {
+        const reciboData = JSON.parse(localStorage.getItem('ultimoRecibo'));
+        if (!reciboData) {
+          alert('Nenhum recibo encontrado. Redirecionando...');
+          window.location.href = 'index.html';
+          return;
+        }
+
+        const { venda, empresa, numeroRecibo } = reciboData;
+
+        // Dados da empresa
+        const nome = empresa.nome || 'Minha Loja';
+        const endereco = empresa.endereco || '';
+        const telefone = empresa.telefone || '';
+        const cnpj = empresa.cnpj || '';
+
+        let detalhes = '';
+        if (endereco) detalhes += endereco + ' • ';
+        if (cnpj) detalhes += 'CNPJ: ' + cnpj + ' • ';
+        if (telefone) detalhes += telefone;
+
+        document.getElementById('empresaNome').textContent = nome;
+        document.getElementById('empresaDetalhes').textContent = detalhes;
+
+        // Dados do recibo
+        document.getElementById('numeroRecibo').textContent = numeroRecibo;
+        document.getElementById('dataRecibo').textContent = new Date().toLocaleDateString('pt-BR');
+        document.getElementById('clienteRecibo').textContent = venda.Cliente || 'Não informado';
+        document.getElementById('pagamentoRecibo').textContent = venda.FormaPagamento || 'Dinheiro';
+
+        // Produtos (formato simples para impressão)
+        const container = document.getElementById('listaProdutosSimples');
+        container.innerHTML = venda.Produtos.map(item => {
+          const total = item.preco * item.quantidade;
+          return `
+            <div class="produto-linha">
+              <span>${item.quantidade}x ${item.nome}</span>
+              <span>R$ ${total.toFixed(2)}</span>
+            </div>
+          `;
+        }).join('');
+
+        // Total
+        document.getElementById('totalRecibo').textContent = `R$ ${parseFloat(venda.Total).toFixed(2)}`;
+      } catch (error) {
+        console.error('Erro ao carregar recibo:', error);
+        alert('Erro ao carregar recibo: ' + error.message);
+      }
+    }
+  </script>
+</body>
+</html>
