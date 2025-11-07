@@ -1,4 +1,6 @@
-// script.js - API para comunicação com Google Apps Script (VERSÃO CORRIGIDA)
+// script.js - Sistema Vanda - API Google Sheets
+// Arquivo compartilhado por TODAS as páginas
+
 class GoogleSheetsAPI {
     static obterConfiguracoesAtuais() {
         const padrao = {
@@ -145,121 +147,31 @@ class Notificacao {
     }
 }
 
-// Configurações da página
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🚀 Configurações carregando...');
-    await carregarConfiguracoes();
-    atualizarCores();
+// Carregar tema da empresa automaticamente em todas as páginas
+document.addEventListener('DOMContentLoaded', function() {
+    carregarTemaEmpresa();
 });
 
-async function carregarConfiguracoes() {
-    console.log('📥 Carregando configurações salvas...');
-    const configConexao = GoogleSheetsAPI.obterConfiguracoesAtuais();
-    document.getElementById('urlGas').value = configConexao.gas_url;
-    document.getElementById('spreadsheetId').value = configConexao.spreadsheet_id;
-
+function carregarTemaEmpresa() {
     try {
-        console.log('🔄 Buscando dados da empresa...');
-        const resposta = await GoogleSheetsAPI.get('obterEmpresa');
-        const e = resposta.data?.empresa || {};
-        document.getElementById('nomeEmpresa').value = e.nome || '';
-        document.getElementById('enderecoFiscal').value = e.endereco || '';
-        document.getElementById('telefone').value = e.telefone || '';
-        document.getElementById('email').value = e.email || '';
-        if (e.corPrimaria) document.getElementById('corPrimaria').value = e.corPrimaria;
-        if (e.corSecundaria) document.getElementById('corSecundaria').value = e.corSecundaria;
-        atualizarCores();
-        console.log('✅ Dados da empresa carregados');
-    } catch (ex) {
-        console.warn('⚠️ Empresa não configurada ou erro ao carregar:', ex);
-    }
-}
-
-function atualizarCores() {
-    const c1 = document.getElementById('corPrimaria').value;
-    const c2 = document.getElementById('corSecundaria').value;
-    document.documentElement.style.setProperty('--cor-primaria', c1);
-    document.documentElement.style.setProperty('--cor-secundaria', c2);
-    document.documentElement.style.setProperty('--fundo-gradiente', `linear-gradient(135deg, ${c1}, ${c2})`);
-    document.getElementById('previewPrimaria').style.backgroundColor = c1;
-    document.getElementById('previewSecundaria').style.backgroundColor = c2;
-    document.getElementById('previewNome').textContent = document.getElementById('nomeEmpresa').value || 'Sua Loja';
-}
-
-async function testarConexao() {
-    console.log('🎯 Botão Testar Conexão clicado');
-    
-    const url = document.getElementById('urlGas').value.trim();
-    const id = document.getElementById('spreadsheetId').value.trim();
-    
-    if (!url || !id) {
-        Notificacao.mostrar('❌ Preencha URL e ID da planilha', 'error');
-        return;
-    }
-    
-    console.log('💾 Salvando configurações...');
-    GoogleSheetsAPI.atualizarConfiguracoes(url, id);
-    
-    try {
-        Notificacao.mostrar('🔍 Testando conexão...', 'info');
-        console.log('🔄 Iniciando teste de conexão...');
+        const empresa = JSON.parse(localStorage.getItem('vanda_empresa') || '{}');
+        if (empresa.corPrimaria) {
+            document.documentElement.style.setProperty('--cor-primaria', empresa.corPrimaria);
+        }
+        if (empresa.corSecundaria) {
+            document.documentElement.style.setProperty('--cor-secundaria', empresa.corSecundaria);
+        }
+        if (empresa.corPrimaria && empresa.corSecundaria) {
+            document.documentElement.style.setProperty('--fundo-gradiente', 
+                `linear-gradient(135deg, ${empresa.corPrimaria}, ${empresa.corSecundaria})`);
+        }
         
-        await GoogleSheetsAPI.testarConexao();
-        
-        mostrarStatus('✅ Conexão bem-sucedida!', true);
-        Notificacao.mostrar('✅ Conexão com Google Sheets estabelecida!', 'success');
-        console.log('🎉 Conexão testada com sucesso!');
-        
-    } catch (err) {
-        console.error('💥 Erro na conexão:', err);
-        mostrarStatus('❌ Falha: ' + err.message, false);
-        Notificacao.mostrar('❌ ' + err.message, 'error');
-    }
-}
-
-function mostrarStatus(msg, sucesso) {
-    const el = document.getElementById('statusConexao');
-    el.textContent = msg;
-    el.className = 'status-box ' + (sucesso ? 'status-success' : 'status-error');
-    el.style.display = 'block';
-}
-
-function salvarConexao() {
-    const url = document.getElementById('urlGas').value.trim();
-    const id = document.getElementById('spreadsheetId').value.trim();
-    
-    if (!url || !id) {
-        Notificacao.mostrar('❌ Preencha ambos os campos', 'error');
-        return;
-    }
-    
-    GoogleSheetsAPI.atualizarConfiguracoes(url, id);
-    mostrarStatus('✅ Configuração salva localmente.', true);
-    Notificacao.mostrar('✅ Configurações salvas!', 'success');
-}
-
-async function salvarEmpresa() {
-    const dados = {
-        nome: document.getElementById('nomeEmpresa').value,
-        endereco: document.getElementById('enderecoFiscal').value,
-        telefone: document.getElementById('telefone').value,
-        email: document.getElementById('email').value,
-        corPrimaria: document.getElementById('corPrimaria').value,
-        corSecundaria: document.getElementById('corSecundaria').value
-    };
-    
-    try {
-        Notificacao.mostrar('💾 Salvando dados da empresa...', 'info');
-        console.log('🔄 Enviando dados da empresa:', dados);
-        
-        await GoogleSheetsAPI.request('salvarEmpresa', dados, 'POST');
-        
-        Notificacao.mostrar('✅ Identidade da loja salva com sucesso!', 'success');
-        localStorage.setItem('vanda_empresa', JSON.stringify(dados));
-        console.log('🎉 Dados da empresa salvos!');
-        
-    } catch (err) {
-        console.error('💥 Erro ao salvar empresa:', err);
-        Notificacao.mostrar('❌ Erro: ' + err.message, 'error');
+        // Atualizar nome da empresa no título se existir
+        const tituloEmpresa = document.getElementById('nomeEmpresa');
+        if (tituloEmpresa && empresa.nome) {
+            tituloEmpresa.textContent = empresa.nome;
+        }
+    } catch (error) {
+        console.log('ℹ️ Tema da empresa não configurado');
     }
 }
