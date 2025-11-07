@@ -543,63 +543,110 @@
     document.getElementById('productForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    console.log("🎯 INICIANDO CADASTRO DE PRODUTO...");
+    
     const id = document.getElementById('produtoId').value;
     
-    // VALIDAÇÃO RIGOROSA - CORRIGIDA
+    // COLETA E VALIDAÇÃO DOS DADOS - FORMA CORRIGIDA
     const nome = document.getElementById('produtoNome').value.trim();
-    const preco = parseFloat(document.getElementById('produtoPreco').value);
+    const precoInput = document.getElementById('produtoPreco').value;
     const categoria = document.getElementById('produtoCategoria').value;
-    const estoque = parseInt(document.getElementById('produtoEstoque').value);
+    const estoqueInput = document.getElementById('produtoEstoque').value;
     const codigo = document.getElementById('produtoCodigo').value.trim();
 
-    // Validação detalhada
+    console.log("📝 Dados coletados:", { nome, precoInput, categoria, estoqueInput, codigo });
+
+    // VALIDAÇÃO RIGOROSA
     if (!nome) {
         Notificacao.mostrar('❌ Nome do produto é obrigatório!', 'error');
-        return;
-    }
-    if (!preco || preco <= 0 || isNaN(preco)) {
-        Notificacao.mostrar('❌ Preço deve ser maior que zero!', 'error');
-        return;
-    }
-    if (!categoria) {
-        Notificacao.mostrar('❌ Selecione uma categoria!', 'error');
-        return;
-    }
-    if (estoque < 0 || isNaN(estoque)) {
-        Notificacao.mostrar('❌ Estoque deve ser um número válido!', 'error');
+        document.getElementById('produtoNome').focus();
         return;
     }
 
-    // FORMATO CORRETO DOS DADOS
+    const preco = parseFloat(precoInput.replace(',', '.'));
+    if (isNaN(preco) || preco <= 0) {
+        Notificacao.mostrar('❌ Preço deve ser um número maior que zero!', 'error');
+        document.getElementById('produtoPreco').focus();
+        return;
+    }
+
+    if (!categoria) {
+        Notificacao.mostrar('❌ Selecione uma categoria!', 'error');
+        document.getElementById('produtoCategoria').focus();
+        return;
+    }
+
+    const estoque = parseInt(estoqueInput);
+    if (isNaN(estoque) || estoque < 0) {
+        Notificacao.mostrar('❌ Estoque deve ser um número válido!', 'error');
+        document.getElementById('produtoEstoque').focus();
+        return;
+    }
+
+    // FORMATAÇÃO FINAL DOS DADOS
     const produto = {
         ID: id || null,
         Nome: nome,
-        Preco: preco.toFixed(2), // Garante 2 casas decimais
+        Preco: preco.toFixed(2), // SEMPRE 2 casas decimais
         Categoria: categoria,
-        Estoque: estoque,
+        Estoque: estoque.toString(), // ENVIA COMO STRING
         Codigo: codigo || `COD${Date.now().toString().slice(-6)}`
     };
 
-    console.log('📤 Enviando produto:', produto);
+    console.log("📤 Dados formatados para envio:", produto);
 
     try {
         Notificacao.mostrar('💾 Salvando produto...', 'info');
         
-        const resposta = await GoogleSheetsAPI.request('salvarProduto', produto);
+        // ENVIO DIRETO - FORMA MAIS SIMPLES
+        const config = GoogleSheetsAPI.obterConfiguracoesAtuais();
+        const url = new URL(config.gas_url);
+        url.searchParams.set('action', 'salvarProduto');
+        url.searchParams.set('spreadsheetId', config.spreadsheet_id);
         
-        Notificacao.mostrar(id ? '✅ Produto atualizado com sucesso!' : '✅ Produto cadastrado com sucesso!', 'success');
+        console.log("🌐 URL de envio:", url.toString());
         
-        // Limpar formulário
+        const formData = new URLSearchParams();
+        formData.append('data', JSON.stringify(produto));
+        
+        const resposta = await fetch(url.toString(), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: formData.toString()
+        });
+        
+        if (!resposta.ok) {
+            throw new Error(`Erro HTTP ${resposta.status}`);
+        }
+        
+        const textoResposta = await resposta.text();
+        console.log("📨 Resposta do servidor:", textoResposta);
+        
+        const resultado = JSON.parse(textoResposta);
+        
+        if (resultado.status === 'error') {
+            throw new Error(resultado.message);
+        }
+        
+        Notificacao.mostrar('✅ Produto salvo com sucesso!', 'success');
+        console.log("🎉 Produto salvo:", resultado);
+        
+        // LIMPEZA E RECARGA
         document.getElementById('productForm').reset();
         document.getElementById('produtoId').value = '';
         document.getElementById('btnSalvarTexto').textContent = 'Salvar Produto';
         
-        // Recarregar lista
-        setTimeout(() => carregarProdutos(), 1000);
+        // Recarregar a lista
+        setTimeout(() => {
+            carregarProdutos();
+            Notificacao.mostrar('📦 Lista de produtos atualizada!', 'success');
+        }, 1500);
         
     } catch (error) {
         console.error('❌ Erro completo:', error);
-        Notificacao.mostrar('❌ Erro ao salvar produto: ' + error.message, 'error');
+        Notificacao.mostrar('❌ Falha ao salvar: ' + error.message, 'error');
     }
 });
 
@@ -640,6 +687,31 @@
       const config = JSON.parse(localStorage.getItem('vanda_empresa') || '{}');
       document.getElementById('pageTitulo').textContent = config.nome ? `${config.nome} - Produtos` : 'Produtos';
     });
+    // TESTE DE DIAGNÓSTICO - remover depois
+async function testeEnvioProduto() {
+    const produtoTeste = {
+        Nome: "PRODUTO TESTE",
+        Preco: "99.99",
+        Categoria: "Teste",
+        Estoque: "10",
+        Codigo: "TEST123"
+    };
+    
+    console.log("🎯 INICIANDO TESTE...");
+    console.log("📤 Dados que serão enviados:", produtoTeste);
+    
+    try {
+        const resultado = await GoogleSheetsAPI.request('salvarProduto', produtoTeste);
+        console.log("✅ TESTE BEM-SUCEDIDO:", resultado);
+        alert("TESTE: Produto salvo com sucesso! Verifique o Sheets.");
+    } catch (error) {
+        console.log("❌ TESTE FALHOU:", error);
+        alert("TESTE FALHOU: " + error.message);
+    }
+}
+
+// Execute este teste uma vez
+// testeEnvioProduto();
   </script>
 </body>
 </html>
