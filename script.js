@@ -2,7 +2,7 @@
 class GoogleSheetsAPI {
     static obterConfiguracoesAtuais() {
         const padrao = {
-            gas_url: 'https://script.google.com/macros/s/AKfycbwxQdTwfp8rUZf_knSEf8WbTEax4Jx7e9kFtXpkhPXD_Rzk8pvTfDnayfyaTF_ctIZP/exec',
+            gas_url: 'https://script.google.com/macros/s/AKfycbzKdJfXxOz4FbmIDfjkC3DlOtDC5rFk5IyGyRl1zjZLjuGsbGUXe7QoaAgU1zWQG51E/exec',
             spreadsheet_id: '1dyGF2_jxJC2vANs_QPH4K36jaSRSCu5cg5F6ycwbAK4'
         };
         const salvo = JSON.parse(localStorage.getItem('vanda_gas_config') || '{}');
