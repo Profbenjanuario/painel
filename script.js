@@ -1,6 +1,4 @@
-// script.js - Sistema Vanda - API Google Sheets
-// Arquivo compartilhado por TODAS as páginas
-
+// script.js - Sistema Vanda - API Google Sheets (VERSÃO CORRIGIDA)
 class GoogleSheetsAPI {
     static obterConfiguracoesAtuais() {
         const padrao = {
@@ -20,7 +18,7 @@ class GoogleSheetsAPI {
     static async testarConexao() {
         try {
             console.log('🔍 Iniciando teste de conexão...');
-            const resposta = await this.get('testarConexao', {});
+            const resposta = await this.get('testarConexao');
             console.log('✅ Resposta recebida:', resposta);
             return resposta && resposta.status === 'success';
         } catch (erro) {
@@ -33,7 +31,7 @@ class GoogleSheetsAPI {
         return this.request(acao, parametros, 'GET');
     }
 
-    static async request(acao, dados = {}, metodo = 'GET') {
+    static async request(acao, dados = {}, metodo = 'POST') {
         const config = this.obterConfiguracoesAtuais();
         
         if (!config.gas_url) {
@@ -44,14 +42,8 @@ class GoogleSheetsAPI {
         url.searchParams.set('action', acao);
         url.searchParams.set('spreadsheetId', config.spreadsheet_id);
 
-        // Para GET, adiciona parâmetros na URL
-        if (metodo === 'GET') {
-            Object.keys(dados).forEach(key => {
-                url.searchParams.set(key, JSON.stringify(dados[key]));
-            });
-        }
-
         console.log(`📤 ${metodo} ${acao}:`, url.toString());
+        console.log('📦 Dados enviados:', dados);
 
         const opcoes = {
             method: metodo,
@@ -60,10 +52,19 @@ class GoogleSheetsAPI {
             credentials: 'omit'
         };
 
-        // Só adiciona headers e body para POST (quando necessário)
-        if (metodo === 'POST' && Object.keys(dados).length > 0) {
-            opcoes.headers = { 'Content-Type': 'application/json' };
-            opcoes.body = JSON.stringify(dados);
+        if (metodo === 'POST') {
+            opcoes.headers = { 
+                'Content-Type': 'application/x-www-form-urlencoded' 
+            };
+            // CORREÇÃO: Envia dados como form encoded
+            const formData = new URLSearchParams();
+            formData.append('data', JSON.stringify(dados));
+            opcoes.body = formData.toString();
+        } else {
+            // Para GET, adiciona parâmetros na URL
+            Object.keys(dados).forEach(key => {
+                url.searchParams.set(key, JSON.stringify(dados[key]));
+            });
         }
 
         try {
@@ -80,6 +81,7 @@ class GoogleSheetsAPI {
             try {
                 resultado = JSON.parse(texto);
             } catch (parseError) {
+                console.error('❌ Erro ao parsear JSON:', parseError);
                 throw new Error(`Resposta inválida do servidor: ${texto.substring(0, 100)}`);
             }
 
@@ -89,10 +91,10 @@ class GoogleSheetsAPI {
 
             console.log(`✅ ${acao} sucesso:`, resultado);
             return resultado;
+            
         } catch (erro) {
             console.error(`❌ ${acao} falhou:`, erro);
             
-            // Mensagem mais amigável para o usuário
             if (erro.message.includes('Failed to fetch') || erro.message.includes('NetworkError')) {
                 throw new Error('Não foi possível conectar ao servidor. Verifique sua conexão de internet.');
             } else if (erro.message.includes('CORS')) {
@@ -103,7 +105,6 @@ class GoogleSheetsAPI {
         }
     }
 }
-
 // Sistema de Notificações
 class Notificacao {
     static mostrar(mensagem, tipo = 'info') {
