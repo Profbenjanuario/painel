@@ -1,4 +1,3 @@
-<script>
 // script.js - API para comunicação com Google Apps Script (VERSÃO CORRIGIDA)
 class GoogleSheetsAPI {
     static obterConfiguracoesAtuais() {
@@ -264,4 +263,3 @@ async function salvarEmpresa() {
         Notificacao.mostrar('❌ Erro: ' + err.message, 'error');
     }
 }
-</script>
