@@ -128,8 +128,7 @@
       </div>
     </div>
   </div>
-
-  <script>
+<script>
 // script.js - API para comunicação com Google Apps Script
 class GoogleSheetsAPI {
     static obterConfiguracoesAtuais() {
@@ -199,8 +198,8 @@ class GoogleSheetsAPI {
                 throw new Error(`Resposta inválida: ${texto.substring(0, 100)}`);
             }
 
-            if (!resposta.ok || resultado.error) {
-                throw new Error(resultado.error || `Erro HTTP ${resposta.status}`);
+            if (resultado.status === 'error') {
+                throw new Error(resultado.message || 'Erro no servidor');
             }
 
             console.log(`✅ ${acao}:`, resultado);
@@ -215,11 +214,9 @@ class GoogleSheetsAPI {
 // Sistema de Notificações
 class Notificacao {
     static mostrar(mensagem, tipo = 'info') {
-        // Remove notificação existente
         const existente = document.getElementById('notificacao-sistema');
         if (existente) existente.remove();
         
-        // Cria nova notificação
         const notif = document.createElement('div');
         notif.id = 'notificacao-sistema';
         notif.style.cssText = `
@@ -232,18 +229,7 @@ class Notificacao {
             font-weight: 500;
             z-index: 10000;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            animation: slideIn 0.3s ease;
         `;
-        
-        // Adiciona estilo de animação
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-        `;
-        document.head.appendChild(style);
         
         const cores = {
             success: '#28a745',
@@ -256,13 +242,114 @@ class Notificacao {
         notif.textContent = mensagem;
         document.body.appendChild(notif);
         
-        // Remove após 3 segundos
         setTimeout(() => {
             if (notif.parentNode) notif.parentNode.removeChild(notif);
         }, 3000);
     }
 }
-  </script>
+
+// Configurações da página
+document.addEventListener('DOMContentLoaded', async () => {
+    await carregarConfiguracoes();
+    atualizarCores();
+});
+
+async function carregarConfiguracoes() {
+    const configConexao = GoogleSheetsAPI.obterConfiguracoesAtuais();
+    document.getElementById('urlGas').value = configConexao.gas_url;
+    document.getElementById('spreadsheetId').value = configConexao.spreadsheet_id;
+
+    try {
+        const resposta = await GoogleSheetsAPI.get('obterEmpresa');
+        const e = resposta.data?.empresa || {};
+        document.getElementById('nomeEmpresa').value = e.nome || '';
+        document.getElementById('enderecoFiscal').value = e.endereco || '';
+        document.getElementById('telefone').value = e.telefone || '';
+        document.getElementById('email').value = e.email || '';
+        if (e.corPrimaria) document.getElementById('corPrimaria').value = e.corPrimaria;
+        if (e.corSecundaria) document.getElementById('corSecundaria').value = e.corSecundaria;
+        atualizarCores();
+    } catch (ex) {
+        console.warn('Empresa não configurada');
+    }
+}
+
+function atualizarCores() {
+    const c1 = document.getElementById('corPrimaria').value;
+    const c2 = document.getElementById('corSecundaria').value;
+    document.documentElement.style.setProperty('--cor-primaria', c1);
+    document.documentElement.style.setProperty('--cor-secundaria', c2);
+    document.documentElement.style.setProperty('--fundo-gradiente', `linear-gradient(135deg, ${c1}, ${c2})`);
+    document.getElementById('previewPrimaria').style.backgroundColor = c1;
+    document.getElementById('previewSecundaria').style.backgroundColor = c2;
+    document.getElementById('previewNome').textContent = document.getElementById('nomeEmpresa').value || 'Sua Loja';
+}
+
+async function testarConexao() {
+    console.log('🔍 Testando conexão...');
+    const url = document.getElementById('urlGas').value.trim();
+    const id = document.getElementById('spreadsheetId').value.trim();
+    
+    if (!url || !id) {
+        Notificacao.mostrar('Preencha URL e ID da planilha', 'error');
+        return;
+    }
+    
+    GoogleSheetsAPI.atualizarConfiguracoes(url, id);
+    
+    try {
+        Notificacao.mostrar('Testando conexão...', 'info');
+        await GoogleSheetsAPI.testarConexao();
+        mostrarStatus('✅ Conexão bem-sucedida!', true);
+        Notificacao.mostrar('✅ Conexão bem-sucedida!', 'success');
+    } catch (err) {
+        console.error('Erro na conexão:', err);
+        mostrarStatus('❌ Falha: ' + err.message, false);
+        Notificacao.mostrar('❌ Falha na conexão', 'error');
+    }
+}
+
+function mostrarStatus(msg, sucesso) {
+    const el = document.getElementById('statusConexao');
+    el.textContent = msg;
+    el.className = 'status-box ' + (sucesso ? 'status-success' : 'status-error');
+    el.style.display = 'block';
+}
+
+function salvarConexao() {
+    const url = document.getElementById('urlGas').value.trim();
+    const id = document.getElementById('spreadsheetId').value.trim();
+    if (!url || !id) {
+        Notificacao.mostrar('Preencha ambos os campos', 'error');
+        return;
+    }
+    GoogleSheetsAPI.atualizarConfiguracoes(url, id);
+    mostrarStatus('✅ Configuração salva localmente.', true);
+    Notificacao.mostrar('✅ Configuração salva!', 'success');
+}
+
+async function salvarEmpresa() {
+    const dados = {
+        nome: document.getElementById('nomeEmpresa').value,
+        endereco: document.getElementById('enderecoFiscal').value,
+        telefone: document.getElementById('telefone').value,
+        email: document.getElementById('email').value,
+        corPrimaria: document.getElementById('corPrimaria').value,
+        corSecundaria: document.getElementById('corSecundaria').value
+    };
+    
+    try {
+        Notificacao.mostrar('Salvando dados...', 'info');
+        await GoogleSheetsAPI.request('salvarEmpresa', dados);
+        Notificacao.mostrar('✅ Identidade salva com sucesso!', 'success');
+        localStorage.setItem('vanda_empresa', JSON.stringify(dados));
+    } catch (err) {
+        console.error('Erro ao salvar empresa:', err);
+        Notificacao.mostrar('❌ Erro: ' + err.message, 'error');
+    }
+}
+</script>
+  
   <script>
     // Classe de Notificação (adicionada diretamente aqui para garantir funcionamento)
     class Notificacao {
