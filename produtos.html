@@ -541,29 +541,67 @@
     }
 
     document.getElementById('productForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const id = document.getElementById('produtoId').value;
-      const produto = {
-        ID: id || null,
-        Nome: document.getElementById('produtoNome').value,
-        Preco: document.getElementById('produtoPreco').value,
-        Categoria: document.getElementById('produtoCategoria').value,
-        Estoque: document.getElementById('produtoEstoque').value,
-        Codigo: document.getElementById('produtoCodigo').value
-      };
+    e.preventDefault();
+    
+    const id = document.getElementById('produtoId').value;
+    
+    // VALIDAÇÃO RIGOROSA - CORRIGIDA
+    const nome = document.getElementById('produtoNome').value.trim();
+    const preco = parseFloat(document.getElementById('produtoPreco').value);
+    const categoria = document.getElementById('produtoCategoria').value;
+    const estoque = parseInt(document.getElementById('produtoEstoque').value);
+    const codigo = document.getElementById('produtoCodigo').value.trim();
 
-      try {
-        await GoogleSheetsAPI.request('salvarProduto', produto);
-        Notificacao.mostrar(id ? 'Produto atualizado com sucesso!' : 'Produto cadastrado com sucesso!', 'success');
+    // Validação detalhada
+    if (!nome) {
+        Notificacao.mostrar('❌ Nome do produto é obrigatório!', 'error');
+        return;
+    }
+    if (!preco || preco <= 0 || isNaN(preco)) {
+        Notificacao.mostrar('❌ Preço deve ser maior que zero!', 'error');
+        return;
+    }
+    if (!categoria) {
+        Notificacao.mostrar('❌ Selecione uma categoria!', 'error');
+        return;
+    }
+    if (estoque < 0 || isNaN(estoque)) {
+        Notificacao.mostrar('❌ Estoque deve ser um número válido!', 'error');
+        return;
+    }
+
+    // FORMATO CORRETO DOS DADOS
+    const produto = {
+        ID: id || null,
+        Nome: nome,
+        Preco: preco.toFixed(2), // Garante 2 casas decimais
+        Categoria: categoria,
+        Estoque: estoque,
+        Codigo: codigo || `COD${Date.now().toString().slice(-6)}`
+    };
+
+    console.log('📤 Enviando produto:', produto);
+
+    try {
+        Notificacao.mostrar('💾 Salvando produto...', 'info');
+        
+        const resposta = await GoogleSheetsAPI.request('salvarProduto', produto);
+        
+        Notificacao.mostrar(id ? '✅ Produto atualizado com sucesso!' : '✅ Produto cadastrado com sucesso!', 'success');
+        
+        // Limpar formulário
         document.getElementById('productForm').reset();
         document.getElementById('produtoId').value = '';
         document.getElementById('btnSalvarTexto').textContent = 'Salvar Produto';
-        carregarProdutos();
-      } catch (error) {
-        Notificacao.mostrar('Erro ao salvar produto: ' + error.message, 'error');
-      }
-    });
+        
+        // Recarregar lista
+        setTimeout(() => carregarProdutos(), 1000);
+        
+    } catch (error) {
+        console.error('❌ Erro completo:', error);
+        Notificacao.mostrar('❌ Erro ao salvar produto: ' + error.message, 'error');
+    }
+});
 
     function verProduto(id) {
       const p = todosProdutos.find(p => p.ID === id);
