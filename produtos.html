@@ -446,7 +446,8 @@
     async function carregarProdutos() {
         try {
             const resposta = await GoogleSheetsAPI.get('obterProdutos');
-            todosProdutos = resposta.data?.produtos || [];
+            // CORREÇÃO: Resposta direta sem .data
+            todosProdutos = resposta.produtos || [];
             filtrarProdutos();
             atualizarEstatisticas();
         } catch (error) {
@@ -582,14 +583,14 @@
             return;
         }
 
-        // FORMATAÇÃO DOS DADOS
+        // FORMATAÇÃO DOS DADOS - CORRIGIDA
         const produto = {
-            ID: id || null,
+            ID: id || `PROD${Date.now().toString().slice(-6)}`,
             Nome: nome,
-            Preco: preco,
+            Preco: preco.toFixed(2), // 2 casas decimais
             Categoria: categoria,
-            Estoque: estoque,
-            Codigo: codigo || ''
+            Estoque: estoque.toString(), // String para compatibilidade
+            Codigo: codigo || `COD${Date.now().toString().slice(-6)}`
         };
 
         console.log("📤 Dados formatados para envio:", produto);
@@ -597,7 +598,7 @@
         try {
             Notificacao.mostrar('💾 Salvando produto...', 'info');
             
-            // USANDO A API EXISTENTE - FORMA SIMPLES
+            // CORREÇÃO: Usando o método request padrão do script.js
             const resposta = await GoogleSheetsAPI.request('salvarProduto', produto, 'POST');
             
             console.log("✅ Resposta do servidor:", resposta);
@@ -658,6 +659,6 @@
         const config = JSON.parse(localStorage.getItem('vanda_empresa') || '{}');
         document.getElementById('pageTitulo').textContent = config.nome ? `${config.nome} - Produtos` : 'Produtos';
     });
-          </script>
+</script>
 </body>
 </html>
