@@ -541,88 +541,65 @@
     }
 
     document.getElementById('productForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      console.log("🎯 INICIANDO CADASTRO DE PRODUTO...");
-      
-      const id = document.getElementById('produtoId').value;
-      
-      // COLETA DOS DADOS
-      const nome = document.getElementById('produtoNome').value.trim();
-      const precoInput = document.getElementById('produtoPreco').value;
-      const categoria = document.getElementById('produtoCategoria').value;
-      const estoqueInput = document.getElementById('produtoEstoque').value;
-      const codigo = document.getElementById('produtoCodigo').value.trim();
+    e.preventDefault();
+    
+    const id = document.getElementById('produtoId').value;
+    const nome = document.getElementById('produtoNome').value.trim();
+    const preco = document.getElementById('produtoPreco').value;
+    const categoria = document.getElementById('produtoCategoria').value;
+    const estoque = document.getElementById('produtoEstoque').value;
+    const codigo = document.getElementById('produtoCodigo').value.trim();
 
-      // VALIDAÇÃO
-      if (!nome) {
-          Notificacao.mostrar('❌ Nome do produto é obrigatório!', 'error');
-          return;
-      }
+    // Validações...
+    if (!nome) {
+        Notificacao.mostrar('❌ Nome é obrigatório!', 'error');
+        return;
+    }
 
-      const preco = parseFloat(precoInput.replace(',', '.'));
-      if (isNaN(preco) || preco <= 0) {
-          Notificacao.mostrar('❌ Preço deve ser um número maior que zero!', 'error');
-          return;
-      }
+    try {
+        Notificacao.mostrar('💾 Salvando...', 'info');
+        
+        // SOLUÇÃO: Enviar via POST com JSON (como o GAS espera)
+        const produto = {
+            ID: id || null,
+            Nome: nome,
+            Preco: parseFloat(preco.replace(',', '.')),
+            Categoria: categoria,
+            Estoque: parseInt(estoque),
+            Codigo: codigo || ''
+        };
 
-      if (!categoria) {
-          Notificacao.mostrar('❌ Selecione uma categoria!', 'error');
-          return;
-      }
+        console.log("📤 Enviando:", produto);
 
-      const estoque = parseInt(estoqueInput);
-      if (isNaN(estoque) || estoque < 0) {
-          Notificacao.mostrar('❌ Estoque deve ser um número válido!', 'error');
-          return;
-      }
-
-      // FORMATAÇÃO DOS DADOS NO FORMATO QUE O GAS ESPERA
-      const produto = {
-          ID: id || null,
-          Nome: nome,
-          Preco: preco,
-          Categoria: categoria,
-          Estoque: estoque,
-          Codigo: codigo || ''
-      };
-
-      console.log("📤 Dados formatados para envio:", produto);
-
-      try {
-          Notificacao.mostrar('💾 Salvando produto...', 'info');
-          
-          // ENVIO DIRETO USANDO A API EXISTENTE
-          const resposta = await GoogleSheetsAPI.request('salvarProduto', produto, 'POST');
-          
-          console.log("✅ Resposta do servidor:", resposta);
-          
-          if (resposta.status === 'success') {
-              Notificacao.mostrar('✅ Produto salvo com sucesso!', 'success');
-              
-              // LIMPEZA E RECARGA
-              document.getElementById('productForm').reset();
-              document.getElementById('produtoId').value = '';
-              document.getElementById('btnSalvarTexto').textContent = 'Salvar Produto';
-              
-              // RECARREGAR LISTA
-              await carregarProdutos();
-          } else {
-              throw new Error(resposta.message || 'Erro ao salvar produto');
-          }
-          
-      } catch (error) {
-          console.error('❌ Erro detalhado:', error);
-          
-          // Mensagem mais amigável
-          let mensagemErro = error.message;
-          if (error.message.includes('Unexpected token') || error.message.includes('JSON')) {
-              mensagemErro = 'Erro de comunicação com o servidor. Tente novamente.';
-          }
-          
-          Notificacao.mostrar('❌ Falha ao salvar: ' + mensagemErro, 'error');
-      }
-    });
+        const config = GoogleSheetsAPI.obterConfiguracoesAtuais();
+        const url = `${config.gas_url}?action=salvarProduto&spreadsheetId=${config.spreadsheet_id}`;
+        
+        const resposta = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(produto)
+        });
+        
+        const resultado = await resposta.json();
+        console.log("📨 Resposta:", resultado);
+        
+        if (resultado.status === 'success') {
+            Notificacao.mostrar('✅ Produto salvo!', 'success');
+            document.getElementById('productForm').reset();
+            document.getElementById('produtoId').value = '';
+            document.getElementById('btnSalvarTexto').textContent = 'Salvar Produto';
+            await carregarProdutos();
+        } else {
+            throw new Error(resultado.message);
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro:', error);
+        Notificacao.mostrar('❌ Falha: ' + error.message, 'error');
+    }
+});
 
     function verProduto(id) {
       const p = todosProdutos.find(p => p.ID === id);
