@@ -432,233 +432,234 @@
       </div>
     </div>
   </div>
-<script src="script.js"></script>
-<script>
+
+  <script src="script.js"></script>
+  <script>
     let todosProdutos = [];
     let produtosFiltrados = [];
     let categoriaSelecionada = '';
 
     document.addEventListener('DOMContentLoaded', () => {
-        carregarProdutos();
-        configurarFiltros();
+      carregarProdutos();
+      configurarFiltros();
     });
 
     async function carregarProdutos() {
-        try {
-            const resposta = await GoogleSheetsAPI.get('obterProdutos');
-            // CORREÇÃO: Resposta direta sem .data
-            todosProdutos = resposta.produtos || [];
-            filtrarProdutos();
-            atualizarEstatisticas();
-        } catch (error) {
-            console.error('Erro ao carregar produtos:', error);
-            document.getElementById('productsContainer').innerHTML = 
-                '<div class="loading">⚠️ Erro ao carregar produtos</div>';
-        }
+      try {
+        const resposta = await GoogleSheetsAPI.get('obterProdutos');
+        todosProdutos = resposta.data?.produtos || [];
+        filtrarProdutos();
+        atualizarEstatisticas();
+      } catch (error) {
+        console.error('Erro ao carregar produtos:', error);
+        document.getElementById('productsContainer').innerHTML = 
+          '<div class="loading">⚠️ Erro ao carregar produtos</div>';
+      }
     }
 
     function atualizarEstatisticas() {
-        const total = todosProdutos.length;
-        const baixo = todosProdutos.filter(p => parseInt(p.Estoque) > 0 && parseInt(p.Estoque) < 10).length;
-        const zerado = todosProdutos.filter(p => parseInt(p.Estoque) === 0).length;
-        const valor = todosProdutos.reduce((sum, p) => sum + (parseFloat(p.Preco) * parseInt(p.Estoque || 0)), 0);
+      const total = todosProdutos.length;
+      const baixo = todosProdutos.filter(p => parseInt(p.Estoque) > 0 && parseInt(p.Estoque) < 10).length;
+      const zerado = todosProdutos.filter(p => parseInt(p.Estoque) === 0).length;
+      const valor = todosProdutos.reduce((sum, p) => sum + (parseFloat(p.Preco) * parseInt(p.Estoque || 0)), 0);
 
-        document.getElementById('totalProdutos').textContent = total;
-        document.getElementById('estoqueBaixo').textContent = baixo;
-        document.getElementById('estoqueZerado').textContent = zerado;
-        document.getElementById('valorEstoque').textContent = `R$ ${valor.toFixed(2)}`;
+      document.getElementById('totalProdutos').textContent = total;
+      document.getElementById('estoqueBaixo').textContent = baixo;
+      document.getElementById('estoqueZerado').textContent = zerado;
+      document.getElementById('valorEstoque').textContent = `R$ ${valor.toFixed(2)}`;
     }
 
     function filtrarProdutos() {
-        const termo = document.getElementById('searchInput').value.toLowerCase();
-        
-        let filtrados = todosProdutos.filter(produto => {
-            const nome = (produto.Nome || '').toLowerCase();
-            const codigo = (produto.Codigo || '').toLowerCase();
-            const categoria = (produto.Categoria || '').toLowerCase();
-            const matchTexto = nome.includes(termo) || codigo.includes(termo) || categoria.includes(termo);
-            const matchCategoria = categoriaSelecionada ? produto.Categoria === categoriaSelecionada : true;
-            return matchTexto && matchCategoria;
-        });
+      const termo = document.getElementById('searchInput').value.toLowerCase();
+      
+      let filtrados = todosProdutos.filter(produto => {
+        const nome = (produto.Nome || '').toLowerCase();
+        const codigo = (produto.Codigo || '').toLowerCase();
+        const categoria = (produto.Categoria || '').toLowerCase();
+        const matchTexto = nome.includes(termo) || codigo.includes(termo) || categoria.includes(termo);
+        const matchCategoria = categoriaSelecionada ? produto.Categoria === categoriaSelecionada : true;
+        return matchTexto && matchCategoria;
+      });
 
-        produtosFiltrados = filtrados;
-        renderizarProdutos();
+      produtosFiltrados = filtrados;
+      renderizarProdutos();
     }
 
     function renderizarProdutos() {
-        const container = document.getElementById('productsContainer');
-        
-        if (produtosFiltrados.length === 0) {
-            container.innerHTML = '<div class="loading">Nenhum produto encontrado</div>';
-            return;
+      const container = document.getElementById('productsContainer');
+      
+      if (produtosFiltrados.length === 0) {
+        container.innerHTML = '<div class="loading">Nenhum produto encontrado</div>';
+        return;
+      }
+
+      container.innerHTML = produtosFiltrados.map(produto => {
+        const estoque = parseInt(produto.Estoque) || 0;
+        let classeEstoque = '';
+        let textoEstoque = `${estoque} unid.`;
+        if (estoque === 0) {
+          classeEstoque = 'stock-out';
+          textoEstoque = 'Esgotado';
+        } else if (estoque < 10) {
+          classeEstoque = 'stock-low';
+          textoEstoque += ' (Baixo)';
         }
 
-        container.innerHTML = produtosFiltrados.map(produto => {
-            const estoque = parseInt(produto.Estoque) || 0;
-            let classeEstoque = '';
-            let textoEstoque = `${estoque} unid.`;
-            if (estoque === 0) {
-                classeEstoque = 'stock-out';
-                textoEstoque = 'Esgotado';
-            } else if (estoque < 10) {
-                classeEstoque = 'stock-low';
-                textoEstoque += ' (Baixo)';
-            }
-
-            return `
-                <div class="product-card">
-                    <div class="product-image">
-                        <i class="fas fa-box-open"></i>
-                    </div>
-                    <div class="product-name">${produto.Nome || 'Sem nome'}</div>
-                    <div class="product-price">R$ ${parseFloat(produto.Preco || 0).toFixed(2)}</div>
-                    <div class="product-stock ${classeEstoque}">${textoEstoque}</div>
-                    <div class="product-actions">
-                        <button class="btn-icon btn-view" title="Ver" onclick="verProduto('${produto.ID}')">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="btn-icon btn-edit" title="Editar" onclick="editarProduto('${produto.ID}')">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-icon btn-delete" title="Excluir" onclick="excluirProduto('${produto.ID}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
-        }).join('');
+        return `
+          <div class="product-card">
+            <div class="product-image">
+              <i class="fas fa-box-open"></i>
+            </div>
+            <div class="product-name">${produto.Nome || 'Sem nome'}</div>
+            <div class="product-price">R$ ${parseFloat(produto.Preco || 0).toFixed(2)}</div>
+            <div class="product-stock ${classeEstoque}">${textoEstoque}</div>
+            <div class="product-actions">
+              <button class="btn-icon btn-view" title="Ver" onclick="verProduto('${produto.ID}')">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button class="btn-icon btn-edit" title="Editar" onclick="editarProduto('${produto.ID}')">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn-icon btn-delete" title="Excluir" onclick="excluirProduto('${produto.ID}')">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
     function configurarFiltros() {
-        document.querySelectorAll('.category-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                categoriaSelecionada = btn.dataset.categoria;
-                filtrarProdutos();
-            });
+      document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          categoriaSelecionada = btn.dataset.categoria;
+          filtrarProdutos();
         });
+      });
     }
 
     document.getElementById('productForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        console.log("🎯 INICIANDO CADASTRO DE PRODUTO...");
-        
-        const id = document.getElementById('produtoId').value;
-        
-        // COLETA DOS DADOS
-        const nome = document.getElementById('produtoNome').value.trim();
-        const precoInput = document.getElementById('produtoPreco').value;
-        const categoria = document.getElementById('produtoCategoria').value;
-        const estoqueInput = document.getElementById('produtoEstoque').value;
-        const codigo = document.getElementById('produtoCodigo').value.trim();
+      e.preventDefault();
+      
+      console.log("🎯 INICIANDO CADASTRO DE PRODUTO...");
+      
+      const id = document.getElementById('produtoId').value;
+      
+      // COLETA DOS DADOS
+      const nome = document.getElementById('produtoNome').value.trim();
+      const precoInput = document.getElementById('produtoPreco').value;
+      const categoria = document.getElementById('produtoCategoria').value;
+      const estoqueInput = document.getElementById('produtoEstoque').value;
+      const codigo = document.getElementById('produtoCodigo').value.trim();
 
-        console.log("📝 Dados coletados:", { nome, precoInput, categoria, estoqueInput, codigo });
+      // VALIDAÇÃO
+      if (!nome) {
+          Notificacao.mostrar('❌ Nome do produto é obrigatório!', 'error');
+          return;
+      }
 
-        // VALIDAÇÃO
-        if (!nome) {
-            Notificacao.mostrar('❌ Nome do produto é obrigatório!', 'error');
-            document.getElementById('produtoNome').focus();
-            return;
-        }
+      const preco = parseFloat(precoInput.replace(',', '.'));
+      if (isNaN(preco) || preco <= 0) {
+          Notificacao.mostrar('❌ Preço deve ser um número maior que zero!', 'error');
+          return;
+      }
 
-        const preco = parseFloat(precoInput.replace(',', '.'));
-        if (isNaN(preco) || preco <= 0) {
-            Notificacao.mostrar('❌ Preço deve ser um número maior que zero!', 'error');
-            document.getElementById('produtoPreco').focus();
-            return;
-        }
+      if (!categoria) {
+          Notificacao.mostrar('❌ Selecione uma categoria!', 'error');
+          return;
+      }
 
-        if (!categoria) {
-            Notificacao.mostrar('❌ Selecione uma categoria!', 'error');
-            document.getElementById('produtoCategoria').focus();
-            return;
-        }
+      const estoque = parseInt(estoqueInput);
+      if (isNaN(estoque) || estoque < 0) {
+          Notificacao.mostrar('❌ Estoque deve ser um número válido!', 'error');
+          return;
+      }
 
-        const estoque = parseInt(estoqueInput);
-        if (isNaN(estoque) || estoque < 0) {
-            Notificacao.mostrar('❌ Estoque deve ser um número válido!', 'error');
-            document.getElementById('produtoEstoque').focus();
-            return;
-        }
+      // FORMATAÇÃO DOS DADOS NO FORMATO QUE O GAS ESPERA
+      const produto = {
+          ID: id || null,
+          Nome: nome,
+          Preco: preco,
+          Categoria: categoria,
+          Estoque: estoque,
+          Codigo: codigo || ''
+      };
 
-        // FORMATAÇÃO DOS DADOS - CORRIGIDA
-        const produto = {
-            ID: id || `PROD${Date.now().toString().slice(-6)}`,
-            Nome: nome,
-            Preco: preco.toFixed(2), // 2 casas decimais
-            Categoria: categoria,
-            Estoque: estoque.toString(), // String para compatibilidade
-            Codigo: codigo || `COD${Date.now().toString().slice(-6)}`
-        };
+      console.log("📤 Dados formatados para envio:", produto);
 
-        console.log("📤 Dados formatados para envio:", produto);
-
-        try {
-            Notificacao.mostrar('💾 Salvando produto...', 'info');
-            
-            // CORREÇÃO: Usando o método request padrão do script.js
-            const resposta = await GoogleSheetsAPI.request('salvarProduto', produto, 'POST');
-            
-            console.log("✅ Resposta do servidor:", resposta);
-            
-            if (resposta.status === 'success') {
-                Notificacao.mostrar('✅ Produto salvo com sucesso!', 'success');
-                
-                // LIMPEZA E RECARGA
-                document.getElementById('productForm').reset();
-                document.getElementById('produtoId').value = '';
-                document.getElementById('btnSalvarTexto').textContent = 'Salvar Produto';
-                
-                // RECARREGAR LISTA
-                await carregarProdutos();
-            } else {
-                throw new Error(resposta.message || 'Erro ao salvar produto');
-            }
-            
-        } catch (error) {
-            console.error('❌ Erro detalhado:', error);
-            Notificacao.mostrar('❌ Falha ao salvar: ' + error.message, 'error');
-        }
+      try {
+          Notificacao.mostrar('💾 Salvando produto...', 'info');
+          
+          // ENVIO DIRETO USANDO A API EXISTENTE
+          const resposta = await GoogleSheetsAPI.request('salvarProduto', produto, 'POST');
+          
+          console.log("✅ Resposta do servidor:", resposta);
+          
+          if (resposta.status === 'success') {
+              Notificacao.mostrar('✅ Produto salvo com sucesso!', 'success');
+              
+              // LIMPEZA E RECARGA
+              document.getElementById('productForm').reset();
+              document.getElementById('produtoId').value = '';
+              document.getElementById('btnSalvarTexto').textContent = 'Salvar Produto';
+              
+              // RECARREGAR LISTA
+              await carregarProdutos();
+          } else {
+              throw new Error(resposta.message || 'Erro ao salvar produto');
+          }
+          
+      } catch (error) {
+          console.error('❌ Erro detalhado:', error);
+          
+          // Mensagem mais amigável
+          let mensagemErro = error.message;
+          if (error.message.includes('Unexpected token') || error.message.includes('JSON')) {
+              mensagemErro = 'Erro de comunicação com o servidor. Tente novamente.';
+          }
+          
+          Notificacao.mostrar('❌ Falha ao salvar: ' + mensagemErro, 'error');
+      }
     });
 
     function verProduto(id) {
-        const p = todosProdutos.find(p => p.ID === id);
-        if (!p) return;
-        alert(`Produto: ${p.Nome}\nPreço: R$ ${p.Preco}\nEstoque: ${p.Estoque}\nCategoria: ${p.Categoria}`);
+      const p = todosProdutos.find(p => p.ID === id);
+      if (!p) return;
+      alert(`Produto: ${p.Nome}\nPreço: R$ ${p.Preco}\nEstoque: ${p.Estoque}\nCategoria: ${p.Categoria}`);
     }
 
     function editarProduto(id) {
-        const p = todosProdutos.find(p => p.ID === id);
-        if (!p) return;
-        
-        document.getElementById('produtoId').value = p.ID;
-        document.getElementById('produtoNome').value = p.Nome;
-        document.getElementById('produtoPreco').value = p.Preco;
-        document.getElementById('produtoCategoria').value = p.Categoria;
-        document.getElementById('produtoEstoque').value = p.Estoque;
-        document.getElementById('produtoCodigo').value = p.Codigo || '';
-        document.getElementById('btnSalvarTexto').textContent = 'Atualizar Produto';
-        
-        document.getElementById('productForm').scrollIntoView({ behavior: 'smooth' });
+      const p = todosProdutos.find(p => p.ID === id);
+      if (!p) return;
+      
+      document.getElementById('produtoId').value = p.ID;
+      document.getElementById('produtoNome').value = p.Nome;
+      document.getElementById('produtoPreco').value = p.Preco;
+      document.getElementById('produtoCategoria').value = p.Categoria;
+      document.getElementById('produtoEstoque').value = p.Estoque;
+      document.getElementById('produtoCodigo').value = p.Codigo || '';
+      document.getElementById('btnSalvarTexto').textContent = 'Atualizar Produto';
+      
+      document.getElementById('productForm').scrollIntoView({ behavior: 'smooth' });
     }
 
     async function excluirProduto(id) {
-        if (!confirm('Tem certeza que deseja excluir este produto?')) return;
-        try {
-            Notificacao.mostrar('Exclusão permanente ainda não implementada. (Simulação)', 'info');
-            carregarProdutos();
-        } catch (error) {
-            Notificacao.mostrar('Erro ao excluir: ' + error.message, 'error');
-        }
+      if (!confirm('Tem certeza que deseja excluir este produto?')) return;
+      try {
+        Notificacao.mostrar('Exclusão permanente ainda não implementada. (Simulação)', 'info');
+        carregarProdutos();
+      } catch (error) {
+        Notificacao.mostrar('Erro ao excluir: ' + error.message, 'error');
+      }
     }
 
     // Atualizar título com nome da empresa
     window.addEventListener('empresaAtualizada', async () => {
-        const config = JSON.parse(localStorage.getItem('vanda_empresa') || '{}');
-        document.getElementById('pageTitulo').textContent = config.nome ? `${config.nome} - Produtos` : 'Produtos';
+      const config = JSON.parse(localStorage.getItem('vanda_empresa') || '{}');
+      document.getElementById('pageTitulo').textContent = config.nome ? `${config.nome} - Produtos` : 'Produtos';
     });
-</script>
+  </script>
 </body>
 </html>
