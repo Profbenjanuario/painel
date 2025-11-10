@@ -393,6 +393,7 @@
     let itensVenda = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
+      console.log("🚀 Iniciando nova venda...");
       await carregarProdutos();
       configurarBusca();
       configurarPagamento();
@@ -400,10 +401,17 @@
 
     async function carregarProdutos() {
       try {
+        console.log("🔄 Carregando produtos disponíveis...");
         const resposta = await GoogleSheetsAPI.get('obterProdutos');
-        produtosDisponiveis = resposta.produtos || [];
+        produtosDisponiveis = resposta.data?.produtos || [];
         console.log('✅ Produtos carregados:', produtosDisponiveis.length);
+        console.log('📦 Lista de produtos:', produtosDisponiveis);
+        
+        if (produtosDisponiveis.length === 0) {
+          console.warn('⚠️ Nenhum produto encontrado na base de dados');
+        }
       } catch (error) {
+        console.error('❌ Erro ao carregar produtos:', error);
         Notificacao.mostrar('Erro ao carregar produtos: ' + error.message, 'error');
       }
     }
@@ -414,6 +422,8 @@
 
       input.addEventListener('input', () => {
         const termo = input.value.trim().toLowerCase();
+        console.log("🔍 Buscando:", termo, "em", produtosDisponiveis.length, "produtos");
+        
         lista.innerHTML = '';
         if (!termo) {
           lista.style.display = 'none';
@@ -425,11 +435,13 @@
           (p.Codigo && p.Codigo.toLowerCase().includes(termo))
         ).slice(0, 5);
 
+        console.log("🎯 Resultados encontrados:", resultados.length, resultados);
+
         if (resultados.length > 0) {
           lista.style.display = 'block';
           lista.innerHTML = resultados.map(p => `
             <div class="product-item" onclick="selecionarProduto(${JSON.stringify(p).replace(/"/g, '&quot;')})">
-              ${p.Nome} <small>(Estoque: ${p.Estoque})</small>
+              ${p.Nome} <small>(Estoque: ${p.Estoque})</small> - R$ ${parseFloat(p.Preco || 0).toFixed(2)}
             </div>
           `).join('');
         } else {
@@ -446,27 +458,38 @@
     }
 
     function selecionarProduto(produto) {
+      console.log("🎯 Selecionando produto:", produto);
+      
       // Verificar estoque
-      if (parseInt(produto.Estoque) <= 0) {
+      const estoque = parseInt(produto.Estoque) || 0;
+      if (estoque <= 0) {
         Notificacao.mostrar('Produto esgotado!', 'warning');
         return;
       }
 
       const itemExistente = itensVenda.find(i => i.ID === produto.ID);
       if (itemExistente) {
+        // Verificar se não excede o estoque
+        if (itemExistente.quantidade >= estoque) {
+          Notificacao.mostrar('Estoque insuficiente! Máximo: ' + estoque, 'warning');
+          return;
+        }
         itemExistente.quantidade += 1;
+        console.log("➕ Quantidade aumentada para:", itemExistente.quantidade);
       } else {
         itensVenda.push({
           ID: produto.ID,
           nome: produto.Nome,
-          preco: parseFloat(produto.Preco),
+          preco: parseFloat(produto.Preco) || 0,
           quantidade: 1
         });
+        console.log("🆕 Novo item adicionado:", produto.Nome);
       }
 
       atualizarTabelaItens();
       document.getElementById('searchProduto').value = '';
       document.getElementById('listaSugestoes').style.display = 'none';
+      console.log("🛒 Itens na venda:", itensVenda);
     }
 
     function atualizarTabelaItens() {
@@ -487,7 +510,7 @@
           <td>R$ ${item.preco.toFixed(2)}</td>
           <td>R$ ${(item.preco * item.quantidade).toFixed(2)}</td>
           <td class="actions-cell">
-            <button class="btn-sm btn-danger" onclick="removerItem(${index})">
+            <button class="btn-sm" style="background: #ffebee; color: #c62828; border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer;" onclick="removerItem(${index})">
               <i class="fas fa-trash"></i>
             </button>
           </td>
@@ -500,7 +523,16 @@
     function atualizarQuantidade(index, novaQtd) {
       const qtd = parseInt(novaQtd);
       if (qtd >= 1) {
-        itensVenda[index].quantidade = qtd;
+        // Verificar estoque máximo
+        const produto = produtosDisponiveis.find(p => p.ID === itensVenda[index].ID);
+        const estoqueMaximo = parseInt(produto?.Estoque) || 999;
+        
+        if (qtd > estoqueMaximo) {
+          Notificacao.mostrar(`Quantidade máxima: ${estoqueMaximo}`, 'warning');
+          itensVenda[index].quantidade = estoqueMaximo;
+        } else {
+          itensVenda[index].quantidade = qtd;
+        }
         atualizarTabelaItens();
       }
     }
@@ -508,12 +540,14 @@
     function removerItem(index) {
       itensVenda.splice(index, 1);
       atualizarTabelaItens();
+      console.log("🗑️ Item removido. Itens restantes:", itensVenda);
     }
 
     function atualizarTotais() {
       const subtotal = itensVenda.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
       document.getElementById('subtotal').textContent = `R$ ${subtotal.toFixed(2)}`;
       document.getElementById('total').textContent = `R$ ${subtotal.toFixed(2)}`;
+      console.log("💰 Totais atualizados - Subtotal: R$", subtotal.toFixed(2));
     }
 
     function configurarPagamento() {
@@ -521,11 +555,14 @@
         el.addEventListener('click', () => {
           document.querySelectorAll('.payment-option').forEach(x => x.classList.remove('selected'));
           el.classList.add('selected');
+          console.log("💳 Forma de pagamento selecionada:", el.dataset.pagamento);
         });
       });
     }
 
     async function finalizarVenda() {
+      console.log("🎯 Finalizando venda...");
+      
       if (itensVenda.length === 0) {
         Notificacao.mostrar('Adicione pelo menos um produto!', 'warning');
         return;
@@ -534,6 +571,7 @@
       const cliente = document.getElementById('clienteNome').value.trim();
       if (!cliente) {
         Notificacao.mostrar('Informe o nome do cliente!', 'warning');
+        document.getElementById('clienteNome').focus();
         return;
       }
 
@@ -550,8 +588,14 @@
         Produtos: itensVenda
       };
 
+      console.log("📤 Dados da venda:", venda);
+
       try {
-        await GoogleSheetsAPI.request('salvarVenda', venda);
+        Notificacao.mostrar('Processando venda...', 'info');
+        
+        const resposta = await GoogleSheetsAPI.request('salvarVenda', venda, 'POST');
+        console.log("✅ Resposta do servidor:", resposta);
+        
         Notificacao.mostrar('Venda registrada com sucesso!', 'success');
 
         // Salvar recibo no localStorage para impressão
@@ -559,9 +603,15 @@
         const numeroRecibo = `REC-${Date.now().toString().slice(-6)}`;
         localStorage.setItem('ultimoRecibo', JSON.stringify({ venda, empresa, numeroRecibo }));
 
+        console.log("🧾 Recibo salvo:", numeroRecibo);
+
         // Redirecionar para recibo
-        window.location.href = 'recibo.html';
+        setTimeout(() => {
+          window.location.href = 'recibo.html';
+        }, 1500);
+        
       } catch (error) {
+        console.error('❌ Erro ao salvar venda:', error);
         Notificacao.mostrar('Erro ao salvar venda: ' + error.message, 'error');
       }
     }
