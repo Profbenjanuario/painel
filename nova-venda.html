@@ -560,6 +560,23 @@
       });
     }
 
+    async function enviarVendaJSON(venda) {
+  const url = 'https://script.google.com/macros/s/AKfycbzKdJfXxOz4FbmIDfjkC3DlOtDC5rFk5IyGyRl1zjZLjuGsbGUXe7QoaAgU1zWQG51E/exec'; // substitua pelo URL do seu Web App do GAS
+  const resposta = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json' // ❗ importante: JSON puro
+    },
+    body: JSON.stringify(venda) // ❗ converte o objeto JS em JSON
+  });
+
+  if (!resposta.ok) {
+    throw new Error(`Erro na requisição: ${resposta.status} ${resposta.statusText}`);
+  }
+
+  return await resposta.json(); // espera o retorno JSON do GAS
+    }
+
     async function finalizarVenda() {
       console.log("🎯 Finalizando venda...");
       
@@ -593,7 +610,7 @@
       try {
         Notificacao.mostrar('Processando venda...', 'info');
         
-        const resposta = await GoogleSheetsAPI.request('salvarVenda', venda, 'POST');
+        const resposta = await enviarVendaJSON(venda);
         console.log("✅ Resposta do servidor:", resposta);
         
         Notificacao.mostrar('Venda registrada com sucesso!', 'success');
