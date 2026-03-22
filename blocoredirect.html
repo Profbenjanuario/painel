@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>GePAQ • Auto-Redirecionamento</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: radial-gradient(ellipse at 20% 30%, #0a0f1f, #03050b);
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, 'Poppins', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow-x: hidden;
+            animation: pulseGlow 4s infinite alternate;
+        }
+
+        /* Fundo futurista com grades e partículas */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: radial-gradient(circle at 30% 40%, rgba(0, 212, 255, 0.08) 0%, transparent 60%);
+            animation: drift 20s infinite linear;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes drift {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulseGlow {
+            0% { background: radial-gradient(ellipse at 20% 30%, #0a0f1f, #020408); }
+            100% { background: radial-gradient(ellipse at 30% 35%, #0c1325, #03050b); }
+        }
+
+        /* container principal - vidro futurista */
+        .nexus-container {
+            position: relative;
+            z-index: 10;
+            width: 90%;
+            max-width: 560px;
+            margin: 2rem;
+            backdrop-filter: blur(12px);
+            background: rgba(10, 20, 30, 0.45);
+            border-radius: 3rem;
+            border: 1px solid rgba(0, 255, 255, 0.35);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 255, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            animation: floatIn 0.8s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+
+        @keyframes floatIn {
+            0% {
+                opacity: 0;
+                transform: translateY(40px) scale(0.96);
+                backdrop-filter: blur(0px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                backdrop-filter: blur(12px);
+            }
+        }
+
+        .core-panel {
+            padding: 2.2rem 1.8rem;
+            text-align: center;
+        }
+
+        .hologram {
+            font-size: 3.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #aaffff, #2affb6, #00e0ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 12px rgba(0, 255, 200, 0.4);
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 0.5rem;
+        }
+
+        .hologram span {
+            font-size: 2.8rem;
+            filter: drop-shadow(0 0 6px cyan);
+        }
+
+        .tagline {
+            color: #8eecff;
+            font-weight: 400;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            background: rgba(0, 255, 255, 0.15);
+            display: inline-block;
+            padding: 0.2rem 1rem;
+            border-radius: 40px;
+            backdrop-filter: blur(4px);
+            margin-bottom: 1.8rem;
+        }
+
+        /* chip de número */
+        .quantum-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: rgba(0, 20, 30, 0.7);
+            padding: 0.7rem 1.4rem;
+            border-radius: 80px;
+            width: fit-content;
+            margin: 0 auto 1.6rem auto;
+            border: 1px solid #2affb6;
+            box-shadow: 0 0 12px rgba(42, 255, 182, 0.3);
+            backdrop-filter: blur(5px);
+        }
+
+        .quantum-badge .icon {
+            font-size: 1.5rem;
+            filter: drop-shadow(0 0 4px #2affb6);
+        }
+
+        .quantum-badge .number {
+            font-family: 'Monaco', monospace;
+            font-weight: 600;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            color: #b3fff0;
+            text-shadow: 0 0 5px #0affb0;
+        }
+
+        /* mensagem prévia estilo terminal */
+        .neural-msg {
+            background: rgba(0, 10, 20, 0.65);
+            border-radius: 1.8rem;
+            padding: 1.3rem;
+            margin: 1.5rem 0;
+            border: 1px solid rgba(0, 255, 200, 0.5);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+            text-align: left;
+            backdrop-filter: blur(8px);
+        }
+
+        .msg-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: #2effbc;
+            margin-bottom: 12px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            border-bottom: 1px dashed rgba(0, 255, 200, 0.4);
+            padding-bottom: 6px;
+        }
+
+        .msg-header .dot {
+            width: 8px;
+            height: 8px;
+            background: #2affb6;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #0affb0;
+            animation: blink 1.2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .preview-text {
+            color: #d0f0ff;
+            font-size: 0.95rem;
+            line-height: 1.45;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            word-break: break-word;
+            background: rgba(0, 0, 0, 0.45);
+            padding: 0.9rem;
+            border-radius: 1.2rem;
+            border-left: 3px solid cyan;
+        }
+
+        /* status de redirecionamento instantâneo */
+        .instant-status {
+            margin-top: 1.2rem;
+            background: linear-gradient(90deg, rgba(0,255,200,0.1), rgba(0,150,200,0.05));
+            border-radius: 2rem;
+            padding: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-weight: 500;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(0,255,200,0.3);
+        }
+
+        .pulse-ring {
+            width: 20px;
+            height: 20px;
+            background: #2affb6;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 0 0 0 rgba(42, 255, 182, 0.7);
+            animation: radarPulse 1.2s infinite;
+        }
+
+        @keyframes radarPulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(42, 255, 182, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 12px rgba(42, 255, 182, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(42, 255, 182, 0);
+            }
+        }
+
+        .instant-status span {
+            color: #b3ffec;
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-quantum {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: linear-gradient(95deg, #00c9a7, #00a6b0);
+            margin-top: 1.5rem;
+            width: 100%;
+            padding: 1rem 0;
+            border: none;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1rem;
+            color: #010b12;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            box-shadow: 0 0 15px rgba(0, 255, 200, 0.6);
+            backdrop-filter: blur(4px);
+            font-family: inherit;
+            letter-spacing: 0.8px;
+        }
+
+        .btn-quantum:hover {
+            transform: scale(1.02);
+            background: linear-gradient(95deg, #0ae0b5, #00c2cf);
+            box-shadow: 0 0 28px rgba(0, 255, 210, 0.8);
+        }
+
+        .footer-neural {
+            margin-top: 1.8rem;
+            font-size: 0.65rem;
+            text-align: center;
+            color: #6d9eb0;
+            border-top: 1px solid rgba(0, 255, 200, 0.2);
+            padding-top: 1rem;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .glow-text {
+            color: #3effcf;
+            text-shadow: 0 0 3px cyan;
+        }
+
+        /* partículas animadas */
+        .particle {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle i {
+            position: absolute;
+            background: rgba(0, 255, 200, 0.4);
+            border-radius: 50%;
+            animation: floatParticles 8s infinite linear;
+        }
+
+        @keyframes floatParticles {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+            50% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-20vh) scale(1);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .nexus-container {
+                width: 95%;
+                margin: 1rem;
+            }
+            .preview-text {
+                font-size: 0.85rem;
+            }
+            .quantum-badge .number {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- partículas dinâmicas futuristas -->
+<div class="particle" id="particles"></div>
+
+<div class="nexus-container">
+    <div class="core-panel">
+        <div class="hologram">
+            <span>⚡</span> NEXUS·LINK <span>🌀</span>
+        </div>
+        <div class="tagline">
+            ● PROTOCOLO DE REDIRECIONAMENTO NEURAL ●
+        </div>
+
+        <!-- Badge número WA com estilo cyberpunk -->
+        <div class="quantum-badge">
+            <div class="icon">📡</div>
+            <div class="number">+258 86 492 0606</div>
+            <div class="icon">🔗</div>
+        </div>
+
+        <!-- mensagem personalizada preview -->
+        <div class="neural-msg">
+            <div class="msg-header">
+                <div class="dot"></div> <span>✦ MENSAGEM QUÂNTICA ✦</span>
+                <div class="dot"></div>
+            </div>
+            <div class="preview-text">
+                "Saudações! Gostei do Bloco/Caderno Personalizado de Planificação de Aula, gostaria de Adquirir um Bloco igual em PDF, quais são os requisitos?"
+            </div>
+        </div>
+
+        <!-- status instantâneo -->
+        <div class="instant-status">
+            <div class="pulse-ring"></div>
+            <span>⟁ REDIRECIONAMENTO INSTANTÂNEO ACTIVADO ⟁</span>
+            <div class="pulse-ring"></div>
+        </div>
+
+        <!-- botão de fallback (caso algum navegador bloqueie o redirect instantâneo) -->
+        <a href="#" id="quantumBtn" class="btn-quantum">
+            <span>🔮</span> ACESSAR CANAL DIRECTO <span>💠</span>
+        </a>
+
+        <div class="footer-neural">
+            <span>◈ INTERFACE NEURAL v.∞</span>
+            <span class="glow-text">✦ REDIRECIONAMENTO IMEDIATO ✦</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // Configuração do número e mensagem
+        const phoneNumber = "258864920606";   // sem o '+'
+        const customMessage = "Saudações! Gostei do Bloco/Caderno Personalizado de Planificação de Aula, gostaria de Adquirir um Bloco igual em PDF, quais são os requisitos?";
+        
+        // Codifica a mensagem
+        const encodedMsg = encodeURIComponent(customMessage);
+        
+        // URL definitiva do WhatsApp (wa.me é o mais confiável para mobile/desktop)
+        const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodedMsg}`;
+        
+        // elemento do botão manual
+        const manualBtn = document.getElementById('quantumBtn');
+        if (manualBtn) {
+            manualBtn.href = whatsappURL;
+            manualBtn.setAttribute('target', '_blank');
+            manualBtn.setAttribute('rel', 'noopener noreferrer');
+        }
+        
+        // REDIRECIONAMENTO INSTANTÂNEO - executa imediatamente sem delays
+        // Use um microtask ou execução síncrona para ser o mais rápido possível
+        // mas garantir que não seja bloqueado por popup: redirecionamento na mesma janela funciona.
+        function redirectNow() {
+            // Ação direta: substitui a localização atual pelo link do WhatsApp
+            window.location.href = whatsappURL;
+        }
+        
+        // Disparar redirecionamento o mais rápido possível (assim que o DOM permite)
+        // requestAnimationFrame ou setTimeout 0 ainda é extremamente rápido.
+        // Para garantir que o navegador processe estilos antes, mas seja quase imperceptível
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                redirectNow();
+            });
+        } else {
+            redirectNow();
+        }
+        
+        // Também adicionamos um fallback: se após 0,5s o redirecionamento não ocorreu
+        // (por algum bloqueio extremo de navegador, como política de redirecionamento em iframes)
+        // re-tentamos, mas geralmente o primeiro redirecionamento já funciona.
+        let fallbackTimer = setTimeout(function() {
+            // Verifica se ainda estamos na mesma página (não saímos)
+            if (window.location.href.indexOf("wa.me") === -1 && window.location.href.indexOf("whatsapp.com") === -1) {
+                // segunda tentativa
+                window.location.href = whatsappURL;
+            }
+        }, 400);
+        
+        // Se o redirecionamento ocorrer, o timer é irrelevante. Não causa problemas.
+        // Garantir que o botão manual também interrompa timers, mas sem conflitos.
+        if (manualBtn) {
+            manualBtn.addEventListener('click', function(e) {
+                clearTimeout(fallbackTimer);
+                // o href já está configurado, segue o fluxo normalmente
+            });
+        }
+        
+        // Geração de partículas para efeito futurista (apenas estético)
+        function createParticles() {
+            const container = document.getElementById('particles');
+            if (!container) return;
+            const particleCount = 45;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('i');
+                const size = Math.random() * 4 + 1.5;
+                const posX = Math.random() * 100;
+                const duration = Math.random() * 12 + 6;
+                const delay = Math.random() * 15;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${posX}%`;
+                particle.style.animationDuration = `${duration}s`;
+                particle.style.animationDelay = `${delay}s`;
+                particle.style.opacity = Math.random() * 0.5 + 0.2;
+                particle.style.background = `radial-gradient(circle, #2affb6, #00a6b0)`;
+                container.appendChild(particle);
+            }
+        }
+        
+        createParticles();
+        
+        // Efeito adicional: título animado no console (futurista)
+        console.log("%c🚀 GePAQ REDIRECT • Canal WhatsApp activado em tempo real", "color: #2affb6; font-size: 14px; font-weight: bold;");
+        console.log(`%c➤ Redirecionando para: ${whatsappURL}`, "color: #8eecff;");
+    })();
+</script>
+</body>
+</html>
